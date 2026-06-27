@@ -1,0 +1,8 @@
+{
+  "name": "quizzy",
+  "version": "2.0.0",
+  "description": "Kahoot-style quiz game server",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.16.0" }
+}

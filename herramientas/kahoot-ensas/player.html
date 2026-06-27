@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quizzy — Jugar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@500;600;700;800&display=swap');
+
+:root {
+  --bg: #1a0533;
+  --surface: #2a1050;
+  --card: #331466;
+  --accent: #FF6B35;
+  --gold: #FFD700;
+  --green: #46D160;
+  --red: #E84855;
+  --blue: #3D9BE9;
+  --yellow: #FFC857;
+  --text: #F0E6FF;
+  --muted: rgba(240,230,255,0.5);
+  --opt-a: #E84855;
+  --opt-b: #3D9BE9;
+  --opt-c: #46D160;
+  --opt-d: #FFC857;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg); color: var(--text);
+  touch-action: manipulation;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none;
+  background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(138,43,226,0.3) 0%, transparent 70%);
+}
+
+/* ── SCREENS ── */
+.screen { display:none; position:fixed; inset:0; flex-direction:column; align-items:center; justify-content:center; padding:20px; z-index:1; overflow-y:auto; }
+.screen.active { display:flex; }
+
+/* ══ JOIN SCREEN ══ */
+#join-screen { gap: 20px; background: var(--bg); }
+
+.join-logo {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.join-logo img { height: 72px; width: auto; }
+.join-logo-text {
+  font-family: 'Fredoka One', cursive; font-size: 38px;
+  background: linear-gradient(135deg, #FF6B35, #FFD700);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+.join-subtitle { font-size: 14px; color: var(--muted); text-align:center; }
+
+.join-card {
+  width: 100%; max-width: 360px;
+  background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px; padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+
+.field input {
+  background: var(--card); border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 14px 18px;
+  color: var(--text); font-family: 'Poppins', sans-serif;
+  font-size: 18px; font-weight: 700; outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.field input:focus { border-color: var(--accent); }
+.field input::placeholder { color: rgba(240,230,255,0.2); font-weight: 500; }
+.pin-input { letter-spacing: 8px; text-align: center; font-size: 24px; }
+
+/* Avatar picker */
+.avatar-label { font-size:11px; font-weight:700; letter-spacing:3px; color:var(--muted); text-transform:uppercase; }
+.avatars-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.avatar-btn {
+  aspect-ratio: 1; border-radius: 12px; border: 2px solid transparent;
+  background: var(--card); font-size: 28px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.avatar-btn.selected { border-color: var(--accent); background: rgba(255,107,53,0.2); transform: scale(1.1); }
+.avatar-btn:active { transform: scale(0.9); }
+
+.btn-join {
+  width: 100%; padding: 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, #FF6B35, #FF4500);
+  color: white; font-family: 'Fredoka One', cursive;
+  font-size: 22px; letter-spacing: 2px; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(255,107,53,0.4);
+  transition: all 0.15s; margin-top: 4px;
+}
+.btn-join:active { transform: scale(0.97); }
+.btn-join:disabled { opacity:0.5; transform:none; }
+
+.error-msg {
+  text-align: center; font-size: 13px; font-weight: 700;
+  color: var(--red); background: rgba(232,72,85,0.1);
+  border: 1px solid rgba(232,72,85,0.3); border-radius: 10px;
+  padding: 10px; display: none;
+}
+.error-msg.show { display: block; animation: shake 0.4s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* ══ WAITING SCREEN ══ */
+#waiting-screen { gap: 20px; text-align: center; }
+.waiting-avatar { font-size: 80px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.waiting-name {
+  font-family: 'Fredoka One', cursive; font-size: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.waiting-msg { font-size: 15px; color: var(--muted); }
+.pulse-ring {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); margin: 0 auto;
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(255,107,53,0.4); }
+  70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 20px rgba(255,107,53,0); }
+  100% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+}
+.player-count-badge {
+  background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 8px 20px;
+  font-size: 14px; color: var(--muted);
+}
+
+/* ══ STARTING SCREEN ══ */
+#starting-screen {
+  gap: 24px; text-align: center;
+  background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(255,107,53,0.15) 0%, transparent 70%);
+}
+.starting-text { font-family:'Fredoka One',cursive; font-size:52px; color:var(--gold); }
+.starting-sub { font-size:16px; color:var(--muted); }
+.starting-anim {
+  width:80px; height:80px; border-radius:50%;
+  border:6px solid rgba(255,107,53,0.2);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ══ QUESTION SCREEN ══ */
+#question-screen { padding: 0; justify-content: flex-start; overflow-y: auto; }
+
+.q-header {
+  width: 100%; padding: 14px 20px;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.q-header-left { display:flex; flex-direction:column; }
+.q-num-label { font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; }
+.q-num-val { font-family:'Fredoka One',cursive; font-size:20px; }
+
+.timer-pill {
+  background: var(--card); border-radius: 20px; padding: 6px 18px;
+  font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--accent);
+  border: 2px solid rgba(255,107,53,0.3); min-width: 64px; text-align: center;
+  transition: color 0.3s, border-color 0.3s;
+}
+.timer-pill.urgent { color: var(--red); border-color: rgba(232,72,85,0.5); animation: timer-pulse 0.5s ease-in-out infinite; }
+@keyframes timer-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+.question-display {
+  flex: 0 0 auto; padding: 20px; font-size: 17px; font-weight: 700;
+  line-height: 1.4; text-align: center; max-height: 28vh; overflow-y: auto;
+}
+
+/* ── OPCIONES QUIZ ── */
+.options-list {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 10px 16px;
+  width: 100%; flex: 1; align-content: start;
+}
+.opt-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 14px 8px; border-radius: 16px; border: 3px solid transparent;
+  font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 13px;
+  text-align: center; line-height: 1.3; cursor: pointer; transition: all 0.12s;
+  min-height: 90px; position: relative; overflow: hidden;
+}
+.opt-btn::before { content:''; position:absolute; inset:0; background:currentColor; opacity:0.12; }
+.opt-btn:active { transform: scale(0.93); }
+.opt-btn:disabled { cursor: default; }
+.opt-btn .opt-icon { font-size: 22px; }
+.opt-btn.A { background: rgba(232,72,85,0.15); color: var(--opt-a); border-color: var(--opt-a); }
+.opt-btn.B { background: rgba(61,155,233,0.15); color: var(--opt-b); border-color: var(--opt-b); }
+.opt-btn.C { background: rgba(70,209,96,0.15); color: var(--opt-c); border-color: var(--opt-c); }
+.opt-btn.D { background: rgba(255,200,87,0.15); color: var(--opt-d); border-color: var(--opt-d); }
+.opt-btn.selected { transform: scale(0.97); box-shadow: 0 0 0 3px currentColor; }
+.opt-btn.selected::after { content:'✓'; position:absolute; top:6px; right:10px; font-size:16px; }
+
+/* ── VERDADERO / FALSO ── */
+.tf-list {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px; width: 100%;
+}
+.tf-btn {
+  width: 100%; padding: 22px; border-radius: 20px; border: 3px solid transparent;
+  font-family: 'Fredoka One', cursive; font-size: 26px; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.12s; position: relative;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.tf-btn:active { transform: scale(0.95); }
+.tf-btn:disabled { cursor: default; }
+.tf-btn.true-btn  { background: rgba(70,209,96,0.15); color: var(--green); border-color: var(--green); }
+.tf-btn.false-btn { background: rgba(232,72,85,0.15); color: var(--red);   border-color: var(--red);   }
+.tf-btn.selected  { box-shadow: 0 0 0 4px currentColor; transform: scale(0.97); }
+.tf-btn.selected::after { content:'✓'; position:absolute; right:20px; font-size:20px; }
+
+/* ── RESPUESTA CORTA ── */
+.short-area {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 16px; width: 100%;
+}
+.short-input {
+  width: 100%; background: var(--card); border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 16px; padding: 16px 20px; color: var(--text);
+  font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700;
+  outline: none; -webkit-appearance: none; user-select: text;
+  transition: border-color 0.2s;
+}
+.short-input:focus { border-color: var(--accent); }
+.short-input::placeholder { color: rgba(240,230,255,0.25); font-weight: 500; }
+.short-send {
+  width: 100%; padding: 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, #FF6B35, #FF4500);
+  color: white; font-family: 'Fredoka One', cursive; font-size: 22px;
+  cursor: pointer; box-shadow: 0 8px 28px rgba(255,107,53,0.35); transition: all 0.15s;
+}
+.short-send:active { transform: scale(0.96); }
+.short-send:disabled { opacity: 0.45; }
+
+/* ── ESCALA ── */
+.scale-area {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 20px 16px; width: 100%;
+}
+.scale-number {
+  font-family: 'Fredoka One', cursive; font-size: 80px; color: var(--gold);
+  text-shadow: 0 0 40px rgba(255,215,0,0.4);
+  transition: transform 0.1s;
+}
+.scale-slider {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 12px; border-radius: 6px; outline: none;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  cursor: pointer;
+}
+.scale-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 34px; height: 34px;
+  border-radius: 50%; background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4); cursor: pointer;
+}
+.scale-ticks {
+  display: flex; justify-content: space-between;
+  width: 100%; font-size: 12px; color: var(--muted); font-weight: 700;
+}
+.scale-send {
+  width: 100%; padding: 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, #FF6B35, #FF4500);
+  color: white; font-family: 'Fredoka One', cursive; font-size: 22px;
+  cursor: pointer; box-shadow: 0 8px 28px rgba(255,107,53,0.35); transition: all 0.15s;
+}
+.scale-send:active { transform: scale(0.96); }
+.scale-send:disabled { opacity: 0.45; }
+
+/* ── PUZZLE (drag & drop / tap-to-sort) ── */
+.puzzle-area {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 16px; width: 100%;
+}
+.puzzle-hint {
+  text-align: center; font-size: 12px; color: var(--muted);
+  background: var(--card); border-radius: 10px; padding: 8px 12px;
+}
+.puzzle-piece {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 2px solid rgba(255,107,53,0.3);
+  border-radius: 14px; padding: 14px 16px; cursor: grab;
+  font-size: 14px; font-weight: 700; transition: all 0.15s;
+}
+.puzzle-piece:active { cursor: grabbing; transform: scale(0.97); }
+.puzzle-piece.dragging { opacity: 0.4; border-style: dashed; }
+.puzzle-piece.drag-over { border-color: var(--gold); background: rgba(255,215,0,0.1); transform: scale(1.03); }
+.puzzle-pos {
+  font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--accent);
+  min-width: 28px; text-align: center;
+}
+.puzzle-send {
+  width: 100%; padding: 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, #FF6B35, #FF4500);
+  color: white; font-family: 'Fredoka One', cursive; font-size: 22px;
+  cursor: pointer; box-shadow: 0 8px 28px rgba(255,107,53,0.35); transition: all 0.15s;
+  margin-top: 4px;
+}
+.puzzle-send:active { transform: scale(0.96); }
+.puzzle-send:disabled { opacity: 0.45; }
+
+/* ══ RESULT SCREEN ══ */
+#result-screen { gap: 16px; text-align: center; }
+.result-big { font-size: 90px; animation: result-pop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes result-pop { from{transform:scale(0) rotate(-20deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+.result-label { font-family: 'Fredoka One', cursive; font-size: 36px; }
+.result-label.correct { color: var(--green); }
+.result-label.wrong { color: var(--red); }
+.result-correct-ans {
+  background: rgba(70,209,96,0.1); border: 1px solid rgba(70,209,96,0.3);
+  border-radius: 14px; padding: 12px 20px;
+  font-size: 15px; font-weight: 700; color: var(--green);
+  max-width: 340px; width: 100%;
+}
+.points-gained {
+  font-family: 'Fredoka One', cursive; font-size: 48px; color: var(--gold);
+  text-shadow: 0 0 30px rgba(255,215,0,0.4);
+  animation: points-float 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes points-float { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.streak-badge {
+  background: linear-gradient(135deg, #FF6B35, #FFD700);
+  color: #1a0533; font-weight: 800; font-size: 14px;
+  border-radius: 20px; padding: 6px 16px; display: none;
+}
+.streak-badge.show { display: inline-block; }
+.total-score-display {
+  background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 12px 28px;
+  font-size: 13px; color: var(--muted);
+}
+.total-score-display strong { font-family:'Fredoka One',cursive; font-size:24px; color:var(--text); display:block; }
+.explanation-player {
+  background: rgba(70,209,96,0.08); border: 1px solid rgba(70,209,96,0.2);
+  border-radius: 12px; padding: 12px 16px; max-width:340px; width:100%;
+  font-size: 13px; line-height:1.6; color:var(--muted); display: none;
+}
+.explanation-player.show { display:block; }
+.waiting-next { font-size: 14px; color: var(--muted); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ══ GAME OVER SCREEN ══ */
+#gameover-screen { gap: 20px; text-align: center; }
+.go-title { font-family:'Fredoka One',cursive; font-size:48px; color:var(--gold); }
+.go-position { font-size: 80px; animation: result-pop 0.5s 0.2s both; }
+.go-name { font-family:'Fredoka One',cursive; font-size:28px; }
+.go-score { font-size:16px; color:var(--muted); }
+.lb-mini { width:100%; max-width:360px; display:flex; flex-direction:column; gap:8px; }
+.lb-mini-item {
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border-radius:12px; padding:10px 14px;
+  animation: slide-in 0.4s both;
+}
+@keyframes slide-in { from{transform:translateX(-30px);opacity:0} to{transform:translateX(0);opacity:1} }
+.lb-mini-rank { font-family:'Fredoka One',cursive; font-size:20px; width:28px; }
+.lb-mini-name { flex:1; font-size:14px; font-weight:700; }
+.lb-mini-score { font-family:'Fredoka One',cursive; font-size:18px; color:var(--gold); }
+
+/* ══ KICKED ══ */
+#kicked-screen { gap: 20px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ══ JOIN ══ -->
+<div id="join-screen" class="screen active">
+  <div class="join-logo">
+    <img src="logo.png" alt="Logo">
+    <span class="join-logo-text">Quizzy</span>
+  </div>
+  <div class="join-subtitle">¡Únete al juego con tu PIN!</div>
+
+  <div class="join-card">
+    <div class="field">
+      <label>Código PIN</label>
+      <input class="pin-input" type="tel" id="pin-input" maxlength="6" placeholder="000000" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Tu nombre</label>
+      <input type="text" id="name-input" maxlength="20" placeholder="ej. Juanita 🌟">
+    </div>
+    <div>
+      <div class="avatar-label" style="margin-bottom:8px;">Elige tu avatar</div>
+      <div class="avatars-grid" id="avatars-grid"></div>
+    </div>
+    <div class="error-msg" id="error-msg">Error</div>
+    <button class="btn-join" id="join-btn" onclick="joinGame()">UNIRME 🚀</button>
+  </div>
+</div>
+
+<!-- ══ WAITING ══ -->
+<div id="waiting-screen" class="screen">
+  <div class="waiting-avatar" id="wait-avatar">🎮</div>
+  <div class="waiting-name" id="wait-name">Jugador</div>
+  <div class="waiting-msg">¡Listo para jugar!</div>
+  <div class="pulse-ring"></div>
+  <div class="player-count-badge" id="wait-count">Esperando que el host inicie...</div>
+</div>
+
+<!-- ══ STARTING ══ -->
+<div id="starting-screen" class="screen">
+  <div class="starting-anim"></div>
+  <div class="starting-text">¡VAMOS! 🎯</div>
+  <div class="starting-sub">El juego está comenzando...</div>
+</div>
+
+<!-- ══ QUESTION ══ -->
+<div id="question-screen" class="screen">
+  <div class="q-header">
+    <div class="q-header-left">
+      <div class="q-num-label">Pregunta</div>
+      <div class="q-num-val" id="q-num">1 / 10</div>
+    </div>
+    <div class="timer-pill" id="timer-pill">20</div>
+  </div>
+  <div class="question-display" id="q-display">...</div>
+  <!-- Contenedor dinámico según tipo -->
+  <div id="answer-area" style="width:100%;flex:1;"></div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="result-screen" class="screen">
+  <div class="result-big" id="result-emoji">✅</div>
+  <div class="result-label" id="result-label">¡Correcto!</div>
+  <div class="result-correct-ans" id="result-correct">Respuesta: ...</div>
+  <div class="points-gained" id="points-gained">+500 pts</div>
+  <div class="streak-badge" id="streak-badge">🔥 Racha x3</div>
+  <div class="total-score-display">
+    <strong id="total-score">0</strong>
+    puntos en total
+  </div>
+  <div class="explanation-player" id="explanation-player"></div>
+  <div class="waiting-next">⏳ Esperando siguiente pregunta...</div>
+</div>
+
+<!-- ══ GAME OVER ══ -->
+<div id="gameover-screen" class="screen">
+  <div class="go-title">🏆 Fin del Juego</div>
+  <div class="go-position" id="go-pos">🥇</div>
+  <div class="go-name" id="go-name">Jugador</div>
+  <div class="go-score" id="go-score">0 puntos</div>
+  <div class="lb-mini" id="lb-mini"></div>
+</div>
+
+<!-- ══ KICKED ══ -->
+<div id="kicked-screen" class="screen">
+  <div style="font-size:80px;">😢</div>
+  <div style="font-family:'Fredoka One',cursive;font-size:32px;">Fuiste eliminado</div>
+  <div style="font-size:14px;color:var(--muted);">El host te removió del juego.</div>
+  <button onclick="location.reload()" style="margin-top:20px;padding:14px 32px;border-radius:14px;border:none;background:var(--surface);color:var(--text);font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;cursor:pointer;">Volver a intentar</button>
+</div>
+
+<script>
+// ─── AVATARS ──────────────────────────────────────────────────────────────────
+const AVATARS = ['🦁','🐯','🐼','🦊','🐸','🦄','🐉','🦋','🐙','🦈','🌟','🎯','🎸','🚀','⚡','🌈','🍕','🎮','🏆','👾'];
+let selectedAvatar = AVATARS[0];
+
+function renderAvatars() {
+  const grid = document.getElementById('avatars-grid');
+  grid.innerHTML = AVATARS.map(a => `
+    <div class="avatar-btn ${a===selectedAvatar?'selected':''}" onclick="selectAvatar('${a}')">${a}</div>
+  `).join('');
+}
+function selectAvatar(a) { selectedAvatar = a; renderAvatars(); if(navigator.vibrate) navigator.vibrate(20); }
+renderAvatars();
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let ws, playerId, playerName, playerAvatar;
+let answeredThisRound = false;
+let currentQType = 'quiz';
+let currentPuzzleOrder = [];
+
+const OPTS = ['A','B','C','D'];
+const ICONS = ['🔴','🔵','🟢','🟡'];
+
+// ─── WEBSOCKET ────────────────────────────────────────────────────────────────
+function connect() {
+  ws = new WebSocket(`ws://${location.host}`);
+  ws.onmessage = (e) => handleMsg(JSON.parse(e.data));
+  ws.onclose = () => { if(playerId) setTimeout(connect, 2000); }
+}
+
+function handleMsg(msg) {
+  switch(msg.type) {
+    case 'join_ok':
+      playerId = msg.id; playerName = msg.name; playerAvatar = msg.avatar;
+      document.getElementById('wait-name').textContent = msg.name;
+      document.getElementById('wait-avatar').textContent = msg.avatar;
+      showScreen('waiting-screen');
+      if(navigator.vibrate) navigator.vibrate([50,30,50]);
+      break;
+
+    case 'join_error':
+      showError(msg.message);
+      document.getElementById('join-btn').disabled = false;
+      break;
+
+    case 'game_starting':
+      showScreen('starting-screen');
+      if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+      break;
+
+    case 'question_start':
+      answeredThisRound = false;
+      currentQType = msg.qtype || 'quiz';
+      renderQuestion(msg);
+      showScreen('question-screen');
+      break;
+
+    case 'timer':
+      updateTimer(msg.timeLeft);
+      break;
+
+    case 'answer_received':
+      // feedback visual ya aplicado
+      break;
+
+    case 'answer_result':
+      showResult(msg);
+      break;
+
+    case 'game_over':
+      showGameOver(msg.leaderboard);
+      break;
+
+    case 'kicked':
+      showScreen('kicked-screen');
+      break;
+  }
+}
+
+// ─── JOIN ─────────────────────────────────────────────────────────────────────
+function joinGame() {
+  const pin = document.getElementById('pin-input').value.trim();
+  const name = document.getElementById('name-input').value.trim();
+  if (!pin || pin.length < 4) { showError('Ingresa el PIN de 6 dígitos'); return; }
+  if (!name) { showError('Escribe tu nombre'); return; }
+  document.getElementById('join-btn').disabled = true;
+  hideError();
+  if (!ws || ws.readyState !== WebSocket.OPEN) { connect(); setTimeout(() => doJoin(pin, name), 500); }
+  else doJoin(pin, name);
+}
+function doJoin(pin, name) {
+  ws.send(JSON.stringify({ type: 'player_join', pin, name, avatar: selectedAvatar }));
+}
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg; el.classList.add('show');
+  if(navigator.vibrate) navigator.vibrate([50,30,50]);
+}
+function hideError() { document.getElementById('error-msg').classList.remove('show'); }
+
+document.getElementById('pin-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('name-input').focus(); });
+document.getElementById('name-input').addEventListener('keydown', e => { if(e.key==='Enter') joinGame(); });
+
+// ─── QUESTION ─────────────────────────────────────────────────────────────────
+let currentTimerMax = 20;
+
+function renderQuestion(msg) {
+  currentTimerMax = msg.time;
+  document.getElementById('q-num').textContent = `${msg.index+1} / ${msg.total}`;
+  document.getElementById('q-display').textContent = msg.question;
+  updateTimer(msg.time);
+
+  const area = document.getElementById('answer-area');
+
+  if (msg.qtype === 'truefalse') {
+    area.innerHTML = `
+      <div class="tf-list">
+        <button class="tf-btn true-btn" id="tf-true" onclick="answerTF(0)">✅ Verdadero</button>
+        <button class="tf-btn false-btn" id="tf-false" onclick="answerTF(1)">❌ Falso</button>
+      </div>`;
+
+  } else if (msg.qtype === 'short') {
+    area.innerHTML = `
+      <div class="short-area">
+        <input class="short-input" id="short-input" type="text" placeholder="Escribe tu respuesta..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="short-send" id="short-send" onclick="answerShort()">Enviar ✉️</button>
+      </div>`;
+    // Permitir Enter para enviar
+    document.getElementById('short-input').addEventListener('keydown', e => { if(e.key==='Enter') answerShort(); });
+    // Quitar user-select:none para este input
+    document.getElementById('short-input').style.userSelect = 'text';
+
+  } else if (msg.qtype === 'scale') {
+    const min = 1, max = 10, mid = 5;
+    area.innerHTML = `
+      <div class="scale-area">
+        <div style="font-size:13px;color:var(--muted);">Mueve el slider al valor correcto</div>
+        <div class="scale-number" id="scale-num">${mid}</div>
+        <input class="scale-slider" id="scale-slider" type="range" min="${min}" max="${max}" value="${mid}"
+          oninput="document.getElementById('scale-num').textContent=this.value">
+        <div class="scale-ticks">
+          ${Array.from({length:10},(_,i)=>`<span>${i+1}</span>`).join('')}
+        </div>
+        <button class="scale-send" id="scale-send" onclick="answerScale()">Confirmar 📊</button>
+      </div>`;
+
+  } else if (msg.qtype === 'puzzle') {
+    currentPuzzleOrder = [...msg.options];
+    renderPuzzle(area);
+
+  } else {
+    // QUIZ normal (4 opciones)
+    area.innerHTML = `<div class="options-list">${
+      msg.options.map((opt, i) => `
+        <button class="opt-btn ${OPTS[i]}" id="opt-${i}" onclick="answer(${i})">
+          <span class="opt-icon">${ICONS[i]}</span>
+          <span>${opt}</span>
+        </button>`).join('')
+    }</div>`;
+  }
+}
+
+function updateTimer(t) {
+  const pill = document.getElementById('timer-pill');
+  if (!pill) return;
+  pill.textContent = t;
+  pill.classList.toggle('urgent', t <= 5);
+}
+
+// ── Responder QUIZ ──
+function answer(choice) {
+  if (answeredThisRound) return;
+  answeredThisRound = true;
+  ws.send(JSON.stringify({ type: 'player_answer', choice }));
+  if(navigator.vibrate) navigator.vibrate(40);
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    btn.style.opacity = i === choice ? '1' : '0.4';
+    if (i === choice) btn.classList.add('selected');
+  });
+}
+
+// ── Responder VERDADERO/FALSO ──
+function answerTF(choice) {
+  if (answeredThisRound) return;
+  answeredThisRound = true;
+  ws.send(JSON.stringify({ type: 'player_answer', choice }));
+  if(navigator.vibrate) navigator.vibrate(40);
+  document.querySelectorAll('.tf-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    btn.style.opacity = i === choice ? '1' : '0.4';
+    if (i === choice) btn.classList.add('selected');
+  });
+}
+
+// ── Responder CORTA ──
+function answerShort() {
+  if (answeredThisRound) return;
+  const input = document.getElementById('short-input');
+  const text = (input ? input.value.trim() : '');
+  if (!text) { input.style.borderColor = 'var(--red)'; return; }
+  answeredThisRound = true;
+  ws.send(JSON.stringify({ type: 'player_answer', choice: 0, text }));
+  if(navigator.vibrate) navigator.vibrate(40);
+  if (input) { input.disabled = true; input.style.opacity = '0.7'; }
+  const btn = document.getElementById('short-send');
+  if (btn) { btn.disabled = true; btn.textContent = '✅ Enviado'; btn.style.opacity = '0.7'; }
+}
+
+// ── Responder ESCALA ──
+function answerScale() {
+  if (answeredThisRound) return;
+  answeredThisRound = true;
+  const slider = document.getElementById('scale-slider');
+  const val = slider ? parseInt(slider.value) : 5;
+  ws.send(JSON.stringify({ type: 'player_answer', choice: val - 1 }));
+  if(navigator.vibrate) navigator.vibrate(40);
+  if (slider) slider.disabled = true;
+  const btn = document.getElementById('scale-send');
+  if (btn) { btn.disabled = true; btn.textContent = `✅ Enviado: ${val}`; btn.style.opacity = '0.7'; }
+}
+
+// ── Responder PUZZLE ──
+function answerPuzzle() {
+  if (answeredThisRound) return;
+  answeredThisRound = true;
+  ws.send(JSON.stringify({ type: 'player_answer', choice: 0, order: [...currentPuzzleOrder] }));
+  if(navigator.vibrate) navigator.vibrate(40);
+  document.querySelectorAll('.puzzle-piece').forEach(p => { p.draggable = false; p.style.opacity = '0.7'; p.style.cursor = 'default'; });
+  const btn = document.getElementById('puzzle-send');
+  if (btn) { btn.disabled = true; btn.textContent = '✅ Orden enviado'; btn.style.opacity = '0.7'; }
+}
+
+// ── Renderizar PUZZLE con drag & drop y tap-to-swap ──
+let dragSrc = null;
+let tapFirst = null;
+
+function renderPuzzle(area) {
+  area.innerHTML = `
+    <div class="puzzle-area">
+      <div class="puzzle-hint">✋ Arrastra o toca dos piezas para intercambiarlas</div>
+      <div id="puzzle-list">
+        ${currentPuzzleOrder.map((p, i) => `
+          <div class="puzzle-piece" id="pp-${i}" draggable="true" data-idx="${i}"
+            ondragstart="pDragStart(event,${i})"
+            ondragover="pDragOver(event)"
+            ondrop="pDrop(event,${i})"
+            ondragend="pDragEnd()"
+            onclick="pTap(${i})">
+            <span class="puzzle-pos">${i+1}</span>
+            <span style="flex:1;">${p}</span>
+            <span style="font-size:18px;color:var(--muted);">☰</span>
+          </div>`).join('')}
+      </div>
+      <button class="puzzle-send" id="puzzle-send" onclick="answerPuzzle()">Confirmar orden ✅</button>
+    </div>`;
+}
+
+function pDragStart(e, idx) {
+  dragSrc = idx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function pDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function pDrop(e, idx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrc === null || dragSrc === idx) return;
+  swapPuzzle(dragSrc, idx);
+}
+function pDragEnd() {
+  document.querySelectorAll('.puzzle-piece').forEach(p => p.classList.remove('dragging','drag-over'));
+  dragSrc = null;
+}
+function pTap(idx) {
+  if (answeredThisRound) return;
+  const pieces = document.querySelectorAll('.puzzle-piece');
+  if (tapFirst === null) {
+    tapFirst = idx;
+    pieces[idx].style.borderColor = 'var(--gold)';
+    pieces[idx].style.background = 'rgba(255,215,0,0.15)';
+  } else {
+    if (tapFirst !== idx) swapPuzzle(tapFirst, idx);
+    pieces.forEach(p => { p.style.borderColor = ''; p.style.background = ''; });
+    tapFirst = null;
+  }
+}
+function swapPuzzle(a, b) {
+  [currentPuzzleOrder[a], currentPuzzleOrder[b]] = [currentPuzzleOrder[b], currentPuzzleOrder[a]];
+  renderPuzzle(document.getElementById('answer-area'));
+  if(navigator.vibrate) navigator.vibrate(20);
+}
+
+// ─── RESULT ───────────────────────────────────────────────────────────────────
+function showResult(msg) {
+  showScreen('result-screen');
+  const correct = msg.correct;
+  document.getElementById('result-emoji').textContent = correct ? '✅' : (msg.noAnswer ? '⏱️' : '❌');
+  const label = document.getElementById('result-label');
+  label.textContent = msg.noAnswer ? '¡Tiempo agotado!' : (correct ? '¡Correcto!' : '¡Incorrecto!');
+  label.className = 'result-label ' + (correct ? 'correct' : 'wrong');
+  document.getElementById('result-correct').textContent = `✅ Respuesta: ${msg.correctText}`;
+  document.getElementById('points-gained').textContent = msg.points > 0 ? `+${msg.points.toLocaleString()} pts` : '0 pts';
+  document.getElementById('total-score').textContent = msg.totalScore.toLocaleString();
+  const streak = document.getElementById('streak-badge');
+  if (msg.streak > 1) { streak.textContent = `🔥 Racha x${msg.streak}`; streak.classList.add('show'); }
+  else { streak.classList.remove('show'); }
+  const expEl = document.getElementById('explanation-player');
+  if (msg.explanation) { expEl.textContent = '💡 ' + msg.explanation; expEl.classList.add('show'); }
+  else { expEl.classList.remove('show'); }
+  if(navigator.vibrate) navigator.vibrate(correct ? [50,30,100] : [200]);
+}
+
+// ─── GAME OVER ────────────────────────────────────────────────────────────────
+function showGameOver(lb) {
+  showScreen('gameover-screen');
+  const medals = ['🥇','🥈','🥉'];
+  const myEntry = lb.find(p => p.id === playerId);
+  const myRank = lb.findIndex(p => p.id === playerId) + 1;
+  document.getElementById('go-pos').textContent = medals[myRank-1] || `#${myRank}`;
+  document.getElementById('go-name').textContent = myEntry?.name || playerName;
+  document.getElementById('go-score').textContent = `${(myEntry?.score||0).toLocaleString()} puntos`;
+  document.getElementById('lb-mini').innerHTML = lb.slice(0,5).map((p, i) => `
+    <div class="lb-mini-item" style="animation-delay:${i*0.08}s">
+      <div class="lb-mini-rank">${medals[i]||i+1}</div>
+      <div style="font-size:20px">${p.avatar||'🎮'}</div>
+      <div class="lb-mini-name">${p.name}${p.id===playerId?' 👈':''}</div>
+      <div class="lb-mini-score">${p.score.toLocaleString()}</div>
+    </div>
+  `).join('');
+  if(navigator.vibrate) navigator.vibrate([100,50,100,50,200,50,200]);
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Auto-connect
+connect();
+</script>
+</body>
+</html>

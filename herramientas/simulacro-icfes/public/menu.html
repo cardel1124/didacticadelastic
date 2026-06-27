@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Menú de Simulacros</title>
+</head>
+<body>
+    <h1>Elige un Simulacro</h1>
+    <div id="contenedor-opciones"></div>
+
+    <script>
+        // Pedimos la lista al servidor
+        fetch('/api/lista-simulacros')
+            .then(respuesta => respuesta.json())
+            .then(simulacros => {
+                const contenedor = document.getElementById('contenedor-opciones');
+                
+                simulacros.forEach(simulacro => {
+                    const boton = document.createElement('button');
+                    boton.innerHTML = `<strong>${simulacro.nombre}</strong><br><small>Área: ${simulacro.areas}</small>`;
+                    boton.style.margin = "10px";
+                    boton.style.padding = "10px";
+                    
+                    boton.onclick = () => {
+                        // Guardamos el nombre del archivo en la memoria del navegador
+                        localStorage.setItem('archivoElegido', simulacro.archivo);
+                        // Lo mandamos a la pantalla del examen
+                        window.location.href = 'index.html'; // Cambia 'index.html' por el nombre de la página donde se resuelve el examen
+                    };
+                    
+                    contenedor.appendChild(boton);
+                });
+            });
+    </script>
+</body>
+</html>

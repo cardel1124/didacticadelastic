@@ -1,0 +1,106 @@
+[
+  {
+    "question": "¿Cuál de estos materiales tarda más en degradarse?",
+    "options": [
+      "Papel",
+      "Cáscara de fruta",
+      "Plástico",
+      "Cartón"
+    ],
+    "correct": 2,
+    "time": 20,
+    "qtype": "quiz"
+  },
+  {
+    "question": "¿Qué acción ayuda más a reducir la contaminación?",
+    "options": [
+      "Tirar basura al río",
+      "Reciclar",
+      "Quemar residuos",
+      "Usar más plástico"
+    ],
+    "correct": 1,
+    "time": 20,
+    "qtype": "quiz"
+  },
+  {
+    "question": "¿Cuál es una fuente de energía renovable?",
+    "options": [
+      "Carbón",
+      "Petróleo",
+      "Gas natural",
+      "Energía solar"
+    ],
+    "correct": 3,
+    "time": 20,
+    "qtype": "quiz"
+  },
+  {
+    "question": "Los árboles ayudan a producir oxígeno.",
+    "options": [
+      "Verdadero",
+      "Falso"
+    ],
+    "correct": 0,
+    "time": 20,
+    "qtype": "truefalse"
+  },
+  {
+    "question": "El agua es un recurso ilimitado.",
+    "options": [
+      "Verdadero",
+      "Falso"
+    ],
+    "correct": 1,
+    "time": 20,
+    "qtype": "truefalse"
+  },
+  {
+    "question": "Apagar luces innecesarias ahorra energía.",
+    "options": [
+      "Verdadero",
+      "Falso"
+    ],
+    "correct": 0,
+    "time": 20,
+    "qtype": "truefalse"
+  },
+  {
+    "question": "Los animales no se ven afectados por la contaminación.",
+    "options": [
+      "Verdadero",
+      "Falso"
+    ],
+    "correct": 1,
+    "time": 20,
+    "qtype": "truefalse"
+  },
+  {
+    "question": "En una escala del 1 al 10: ¿Qué tan importante consideras cuidar el medio ambiente?",
+    "options": [
+      "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+    ],
+    "correct": 9,
+    "scaleValue": 10,
+    "time": 20,
+    "qtype": "scale"
+  },
+  {
+    "question": "Ordena los pasos para reciclar correctamente (De inicio a fin):",
+    "options": [
+      "Recolectar materiales reciclables",
+      "Separar residuos",
+      "Limpiar envases",
+      "Depositar en el contenedor adecuado"
+    ],
+    "puzzlePieces": [
+      "Recolectar materiales reciclables",
+      "Separar residuos",
+      "Limpiar envases",
+      "Depositar en el contenedor adecuado"
+    ],
+    "correct": 0,
+    "time": 30,
+    "qtype": "puzzle"
+  }
+]

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentar Simulacro - ENS Alto Sinú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#1a6b2e;--verde-c:#2d9e4a;--amarillo:#f5c518;--azul:#0b3d6e;--rojo:#dc2626;--blanco:#f4f7fb;--border:#e2e8f0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Barlow',sans-serif;background:var(--blanco);color:#1e293b;overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+
+  /* ── TOP BAR ── */
+  .topbar{background:linear-gradient(135deg,var(--azul),var(--verde));display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:58px;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:100;}
+  .topbar-left{display:flex;align-items:center;gap:12px;}
+  .topbar-left img{width:38px;height:38px;border-radius:50%;border:2px solid var(--amarillo);object-fit:cover;}
+  .topbar-title{color:#fff;font-size:0.98rem;font-weight:600;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .timer-box{background:rgba(0,0,0,0.3);border:2px solid var(--amarillo);border-radius:10px;padding:5px 18px;display:flex;align-items:center;gap:8px;}
+  .timer-display{color:var(--amarillo);font-size:1.5rem;font-weight:700;font-family:monospace;letter-spacing:2px;min-width:80px;text-align:center;}
+  .timer-box.urgent{background:rgba(220,38,38,0.4);border-color:#f87171;animation:pulse 1s infinite;}
+  .timer-box.urgent .timer-display{color:#fca5a5;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+  .btn-entregar{background:var(--amarillo);color:var(--azul);border:none;padding:8px 20px;border-radius:9px;font-family:'Barlow',sans-serif;font-weight:700;cursor:pointer;font-size:0.92rem;transition:all 0.2s;white-space:nowrap;}
+  .btn-entregar:hover{background:#e6b800;transform:translateY(-1px);}
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap{height:5px;background:rgba(255,255,255,0.15);flex-shrink:0;}
+  .progress-fill-top{height:100%;background:var(--amarillo);transition:width 0.5s ease;width:0%;}
+
+  /* ── MAIN LAYOUT ── */
+  .layout{display:grid;grid-template-columns:240px 1fr;flex:1;overflow:hidden;}
+
+  /* ── SIDEBAR ── */
+  .sidebar{background:#fff;border-right:2px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .sidebar-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .sidebar-header .sh-title{font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;}
+  .sidebar-header .sh-total{font-size:0.8rem;color:#64748b;margin-top:2px;}
+  .areas-list{flex:1;overflow-y:auto;padding:8px 0;}
+  .area-item{padding:11px 16px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.18s;border-left:3px solid transparent;position:relative;}
+  .area-item:hover{background:#f8fafc;}
+  .area-item.active{background:#eff6ff;border-left-color:var(--azul);}
+  .area-item.done{border-left-color:var(--verde-c);}
+  .area-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+  .area-info{flex:1;min-width:0;}
+  .area-name{font-size:0.88rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .area-item.active .area-name{color:var(--azul);}
+  .area-prog{font-size:0.75rem;color:#94a3b8;margin-top:2px;}
+  .area-check{color:var(--verde-c);font-size:0.85rem;flex-shrink:0;margin-top:2px;}
+
+  /* ── CONTENT AREA ── */
+  .content-area{display:flex;flex-direction:column;overflow:hidden;}
+
+  /* Split: PDF top / Questions bottom */
+  .split-container{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .pdf-zone{flex:0 0 42%;min-height:120px;max-height:55%;display:flex;flex-direction:column;background:#1e293b;position:relative;}
+  .pdf-zone.hidden{flex:0 0 0;min-height:0;max-height:0;}
+  .pdf-topbar{background:#0f172a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .pdf-topbar .pt-name{color:#e2e8f0;font-size:0.85rem;font-weight:600;}
+  .pdf-topbar .pt-actions{display:flex;gap:8px;align-items:center;}
+  .pdf-topbar button{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;padding:4px 10px;border-radius:6px;font-size:0.78rem;cursor:pointer;}
+  .pdf-topbar button:hover{background:rgba(255,255,255,0.2);}
+  .pdf-frame{flex:1;width:100%;border:none;}
+  .pdf-no-content{flex:1;display:flex;align-items:center;justify-content:center;color:#475569;flex-direction:column;gap:8px;font-size:0.9rem;}
+
+  .resize-handle{height:5px;background:#334155;cursor:ns-resize;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .resize-handle:hover{background:var(--azul);}
+  .resize-handle::after{content:'⋯';color:#94a3b8;font-size:0.7rem;letter-spacing:2px;}
+
+  .questions-zone{flex:1;overflow-y:auto;padding:20px 24px;}
+  .qz-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .qz-badge{background:var(--azul);color:#fff;padding:5px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;}
+  .qz-title{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.2rem;}
+  .qz-count{color:#94a3b8;font-size:0.85rem;margin-left:auto;}
+
+  /* ── QUESTION CARDS ── */
+  .preg-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:2px solid var(--border);transition:border-color 0.2s;position:relative;}
+  .preg-card.respondida{border-color:#86efac;}
+  .preg-card.respondida::after{content:'✓';position:absolute;top:12px;right:14px;color:var(--verde-c);font-size:0.9rem;font-weight:700;}
+  .preg-num{font-size:0.75rem;font-weight:700;color:var(--amarillo);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .preg-num-badge{background:var(--azul);color:#f5c518;padding:2px 10px;border-radius:12px;font-size:0.72rem;}
+  .preg-enunciado{background:#f0f4ff;border-left:3px solid var(--azul);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;font-size:0.88rem;line-height:1.6;color:#334155;font-style:italic;display:none;}
+  .preg-enunciado.visible{display:block;}
+  .preg-img{max-width:100%;max-height:260px;border-radius:10px;border:2px solid var(--border);object-fit:contain;display:block;margin:0 auto 12px;}
+  .preg-texto{font-size:0.95rem;line-height:1.6;color:#1e293b;margin-bottom:14px;white-space:pre-wrap;}
+  .opciones{display:flex;flex-direction:column;gap:8px;}
+  .opcion{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.18s;background:#f8fafc;}
+  .opcion:hover{border-color:var(--azul);background:#eff6ff;}
+  .opcion.selected{border-color:var(--azul);background:#eff6ff;}
+  .opcion.selected .op-letra{background:var(--azul);color:#fff;border-color:var(--azul);}
+  .op-letra{width:28px;height:28px;min-width:28px;border-radius:50%;border:2px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;color:#64748b;transition:all 0.18s;flex-shrink:0;margin-top:1px;}
+  .op-body{flex:1;}
+  .op-text{font-size:0.92rem;line-height:1.5;}
+  .op-img{max-width:100%;max-height:140px;border-radius:7px;margin-top:6px;object-fit:contain;display:block;}
+
+  /* ── EMPTY / LOADING ── */
+  .empty-state{text-align:center;padding:50px 20px;color:#94a3b8;}
+  .empty-state .es-icon{font-size:3rem;margin-bottom:12px;}
+  .empty-state p{font-size:0.92rem;line-height:1.6;}
+
+  /* ── RESULTADO OVERLAY ── */
+  .resultado-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .resultado-overlay.open{display:flex;}
+  .resultado-modal{background:#fff;border-radius:22px;padding:36px;max-width:680px;width:95%;max-height:90vh;overflow-y:auto;animation:scaleIn 0.3s ease;}
+  @keyframes scaleIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .res-header{text-align:center;margin-bottom:24px;}
+  .res-header h2{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.8rem;}
+  .puntaje-global{text-align:center;background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;border-radius:18px;padding:28px;margin-bottom:20px;}
+  .pg-num{font-size:4.5rem;font-family:'Playfair Display',serif;font-weight:700;line-height:1;}
+  .pg-label{font-size:0.9rem;opacity:0.85;margin-top:4px;}
+  .pg-nivel{font-size:1.3rem;font-weight:700;margin-top:8px;}
+  .pg-meta{font-size:0.82rem;opacity:0.75;margin-top:4px;}
+  .area-res-card{background:#f8fafc;border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--verde-c);}
+  .arc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px;}
+  .arc-name{font-weight:700;color:var(--azul);font-size:0.92rem;}
+  .arc-badges{display:flex;gap:5px;}
+  .arc-peso{font-size:0.72rem;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:10px;}
+  .arc-nivel{font-size:0.75rem;padding:2px 9px;border-radius:10px;font-weight:700;}
+  .arc-meta{display:flex;justify-content:space-between;font-size:0.84rem;color:#64748b;margin-bottom:5px;}
+  .arc-puntaje{font-weight:700;}
+  .prg-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+  .prg-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+  .btn-volver{width:100%;padding:14px;background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;border:none;border-radius:12px;font-family:'Barlow',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:20px;transition:opacity 0.2s;}
+  .btn-volver:hover{opacity:0.9;}
+
+  @media(max-width:700px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .pdf-zone{flex:0 0 35%;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="/logo.png" alt="Logo">
+    <div class="topbar-title" id="simTitulo">Cargando simulacro...</div>
+  </div>
+  <div class="timer-box" id="timerBox">
+    <span>⏱</span>
+    <div class="timer-display" id="timerDisplay">--:--</div>
+  </div>
+  <button class="btn-entregar" onclick="confirmarEntrega()">📤 Entregar</button>
+</div>
+<div class="progress-wrap"><div class="progress-fill-top" id="progressTop"></div></div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sh-title">Áreas del Simulacro</div>
+      <div class="sh-total" id="sbTotal">–</div>
+    </div>
+    <div class="areas-list" id="areasList">
+      <div class="empty-state" style="padding:30px 16px"><div class="es-icon">⏳</div><p>Cargando...</p></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+    <div class="split-container">
+
+      <!-- PDF ZONE -->
+      <div class="pdf-zone" id="pdfZone">
+        <div class="pdf-topbar">
+          <span class="pt-name" id="pdfNombreBar">PDF del área</span>
+          <div class="pt-actions">
+            <span id="pdfStatusTxt" style="color:#94a3b8;font-size:0.78rem">–</span>
+            <button onclick="togglePdfZone()">⤡ Colapsar</button>
+          </div>
+        </div>
+        <iframe class="pdf-frame" id="pdfFrame" src="about:blank"></iframe>
+      </div>
+      <div class="resize-handle" id="resizeHandle"></div>
+
+      <!-- QUESTIONS ZONE -->
+      <div class="questions-zone" id="questionsZone">
+        <div class="qz-header">
+          <div class="qz-badge" id="qzBadge">–</div>
+          <div class="qz-title" id="qzTitle">Selecciona un área</div>
+          <div class="qz-count" id="qzCount"></div>
+        </div>
+        <div id="preguntasContainer">
+          <div class="empty-state">
+            <div class="es-icon">👈</div>
+            <p>Selecciona un área del menú lateral<br>para ver sus preguntas.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- RESULTADO OVERLAY -->
+<div class="resultado-overlay" id="resultadoOverlay">
+  <div class="resultado-modal">
+    <div class="res-header"><h2>🏆 Tu Resultado</h2></div>
+    <div id="resultadoContent"></div>
+    <button class="btn-volver" onclick="window.location.href='/estudiante/dashboard'">📊 Ver mi Dashboard</button>
+  </div>
+</div>
+
+<script>
+const simId = window.location.pathname.split('/')[2];
+let simulacro = null;
+let respuestas = {};
+let timerInterval = null;
+let tiempoRestante = 0;
+let tiempoTotal = 0;
+let areaActual = -1;
+let pdfZoneCollapsed = false;
+
+// ── INIT ──
+async function init() {
+  try {
+    const res = await fetch(`/estudiante/simulacro/${simId}`);
+    const data = await res.json();
+    if (!data.success) {
+      alert('❌ Simulacro no disponible o no está activo.');
+      window.location.href = '/estudiante/dashboard';
+      return;
+    }
+    simulacro = data.simulacro;
+    document.getElementById('simTitulo').textContent = simulacro.nombre;
+    tiempoTotal = (simulacro.duracion || 120) * 60;
+    tiempoRestante = tiempoTotal;
+
+    const areas = simulacro.areas || [];
+    renderSidebar(areas);
+    startTimer();
+
+    // Auto-select first area with content
+    if (areas.length > 0) {
+      seleccionarArea(0);
+    } else {
+      document.getElementById('areasList').innerHTML = `<div class="empty-state"><div class="es-icon">📭</div><p>Este simulacro no tiene áreas configuradas.</p></div>`;
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error cargando el simulacro. Vuelve al dashboard.');
+    window.location.href = '/estudiante/dashboard';
+  }
+}
+
+// ── SIDEBAR ──
+const AREA_ICONOS = {
+  'Lectura Crítica':'📖','Matemáticas':'📐','Ciencias Naturales':'🔬',
+  'Ciencias Sociales':'🌍','Inglés':'🗣️','default':'📋'
+};
+
+function renderSidebar(areas) {
+  const list = document.getElementById('areasList');
+  const totalPregs = areas.reduce((a,ar)=>a+(ar.preguntas?ar.preguntas.length:0),0);
+  document.getElementById('sbTotal').textContent = `${areas.length} área${areas.length!==1?'s':''} · ${totalPregs} preguntas`;
+
+  if (areas.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:30px 16px"><div class="es-icon">📭</div><p>Sin áreas</p></div>`;
+    return;
+  }
+  list.innerHTML = areas.map((a,i) => {
+    const icon = AREA_ICONOS[a.nombre] || AREA_ICONOS['default'];
+    const nPregs = a.preguntas ? a.preguntas.length : 0;
+    return `<div class="area-item" id="areaItem-${i}" onclick="seleccionarArea(${i})">
+      <div class="area-icon">${icon}</div>
+      <div class="area-info">
+        <div class="area-name">${a.nombre}</div>
+        <div class="area-prog" id="areaProg-${i}">0/${nPregs} respondidas</div>
+      </div>
+      <div class="area-check" id="areaCheck-${i}" style="display:none">✓</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SELECT AREA ──
+function seleccionarArea(idx) {
+  areaActual = idx;
+  const areas = simulacro.areas || [];
+  const area = areas[idx];
+  if (!area) return;
+
+  // Update sidebar active state
+  document.querySelectorAll('.area-item').forEach((el,i) => el.classList.toggle('active', i===idx));
+
+  // Update PDF zone
+  document.getElementById('pdfNombreBar').textContent = area.nombre;
+  document.getElementById('qzBadge').textContent = area.nombre;
+  document.getElementById('qzTitle').textContent = `Preguntas – ${area.nombre}`;
+
+  if (area.pdfPath) {
+    document.getElementById('pdfFrame').src = `/estudiante/simulacro/${simId}/area/${idx}/pdf`;
+    document.getElementById('pdfStatusTxt').textContent = '📄 PDF cargado';
+    showPdfZone();
+  } else {
+    document.getElementById('pdfFrame').src = 'about:blank';
+    document.getElementById('pdfStatusTxt').textContent = 'Sin PDF';
+    hidePdfZone();
+  }
+
+  renderPreguntas(idx);
+  updateProgress();
+}
+
+function showPdfZone() {
+  const z = document.getElementById('pdfZone');
+  z.style.flex = '0 0 42%';
+  z.style.maxHeight = '55%';
+  z.style.minHeight = '120px';
+  pdfZoneCollapsed = false;
+}
+function hidePdfZone() {
+  const z = document.getElementById('pdfZone');
+  z.style.flex = '0 0 0px';
+  z.style.maxHeight = '0';
+  z.style.minHeight = '0';
+  pdfZoneCollapsed = true;
+}
+function togglePdfZone() {
+  if (pdfZoneCollapsed) showPdfZone(); else hidePdfZone();
+}
+
+// ── RENDER PREGUNTAS ──
+function renderPreguntas(idx) {
+  const area = (simulacro.areas||[])[idx];
+  const container = document.getElementById('preguntasContainer');
+  const letras = ['A','B','C','D','E','F','G','H'];
+
+  if (!area || !area.preguntas || area.preguntas.length === 0) {
+    document.getElementById('qzCount').textContent = '';
+    container.innerHTML = `<div class="empty-state">
+      <div class="es-icon">📄</div>
+      <p>Esta área no tiene preguntas configuradas.<br>
+      ${area && area.pdfPath ? 'Consulta el PDF del área para responder.' : 'El profesor aún no ha cargado preguntas.'}</p>
+    </div>`;
+    return;
+  }
+
+  document.getElementById('qzCount').textContent = `${area.preguntas.length} pregunta${area.preguntas.length!==1?'s':''}`;
+
+  container.innerHTML = area.preguntas.map((p, pi) => {
+    const key = `${idx}-${pi}`;
+    const respActual = respuestas[key];
+    const opciones = (p.opciones || []).filter(o => o && o.trim());
+
+    // Enunciado (contexto de situación - solo mostrar si es diferente del texto de la pregunta)
+    const enunciadoHtml = p.enunciado && p.enunciado.trim() && p.enunciado !== p.texto
+      ? `<div class="preg-enunciado visible">📋 <strong>Situación:</strong> ${p.enunciado}</div>`
+      : '';
+
+    // Imagen del enunciado
+    const imgHtml = p.imagen
+      ? `<img src="${p.imagen}" alt="Imagen pregunta ${pi+1}" class="preg-img">`
+      : '';
+
+    // Opciones
+    const opcionesHtml = opciones.map((op, oi) => {
+      const imgOp = p.imagenesOpciones && p.imagenesOpciones[oi]
+        ? `<img src="${p.imagenesOpciones[oi]}" alt="Opción ${letras[oi]}" class="op-img">`
+        : '';
+      return `<div class="opcion${respActual===oi?' selected':''}" onclick="elegir(${idx},${pi},${oi})">
+        <div class="op-letra">${letras[oi]||oi+1}</div>
+        <div class="op-body"><div class="op-text">${op}</div>${imgOp}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="preg-card${respActual!==undefined?' respondida':''}" id="card-${idx}-${pi}">
+      <div class="preg-num">
+        <span class="preg-num-badge">Pregunta ${pi+1}</span>
+        <span style="color:#94a3b8;font-size:0.72rem">de ${area.preguntas.length}</span>
+      </div>
+      ${enunciadoHtml}
+      ${imgHtml}
+      <div class="preg-texto">${p.texto || p.enunciado || ''}</div>
+      <div class="opciones">${opcionesHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SELECCIONAR RESPUESTA ──
+function elegir(aIdx, pIdx, opIdx) {
+  const key = `${aIdx}-${pIdx}`;
+  respuestas[key] = opIdx;
+  const card = document.getElementById(`card-${aIdx}-${pIdx}`);
+  if (card) {
+    card.classList.add('respondida');
+    card.querySelectorAll('.opcion').forEach((el,i) => el.classList.toggle('selected', i===opIdx));
+    card.querySelectorAll('.op-letra').forEach((el,i) => {
+      el.style.background = i===opIdx ? 'var(--azul)' : '';
+      el.style.color = i===opIdx ? '#fff' : '';
+      el.style.borderColor = i===opIdx ? 'var(--azul)' : '';
+    });
+  }
+  updateAreaProgress(aIdx);
+  updateProgress();
+}
+
+function updateAreaProgress(aIdx) {
+  const area = (simulacro.areas||[])[aIdx];
+  if (!area || !area.preguntas) return;
+  const n = area.preguntas.length;
+  let done = 0;
+  area.preguntas.forEach((_,pi) => { if(respuestas[`${aIdx}-${pi}`]!==undefined) done++; });
+  const el = document.getElementById(`areaProg-${aIdx}`);
+  if (el) el.textContent = `${done}/${n} respondidas`;
+  const item = document.getElementById(`areaItem-${aIdx}`);
+  if (item) item.classList.toggle('done', done===n && n>0);
+  const chk = document.getElementById(`areaCheck-${aIdx}`);
+  if (chk) chk.style.display = (done===n && n>0) ? 'block' : 'none';
+}
+
+function updateProgress() {
+  const areas = simulacro.areas || [];
+  const total = areas.reduce((a,ar)=>a+(ar.preguntas?ar.preguntas.length:0),0);
+  const done = Object.keys(respuestas).length;
+  document.getElementById('progressTop').style.width = total>0 ? `${Math.round(done/total*100)}%` : '0%';
+}
+
+// ── TIMER ──
+function startTimer() {
+  const m = Math.floor(tiempoRestante/60).toString().padStart(2,'0');
+  const s = (tiempoRestante%60).toString().padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+
+  timerInterval = setInterval(() => {
+    tiempoRestante--;
+    const mm = Math.floor(tiempoRestante/60).toString().padStart(2,'0');
+    const ss = (tiempoRestante%60).toString().padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = `${mm}:${ss}`;
+    if (tiempoRestante <= 300) document.getElementById('timerBox').classList.add('urgent');
+    if (tiempoRestante <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timerDisplay').textContent = '00:00';
+      entregarSimulacro();
+    }
+  }, 1000);
+}
+
+function tiempoUsado() {
+  const u = tiempoTotal - tiempoRestante;
+  return `${Math.floor(u/60).toString().padStart(2,'0')}:${(u%60).toString().padStart(2,'0')}`;
+}
+
+// ── ENTREGAR ──
+function confirmarEntrega() {
+  const areas = simulacro.areas || [];
+  const total = areas.reduce((a,ar)=>a+(ar.preguntas?ar.preguntas.length:0),0);
+  const done = Object.keys(respuestas).length;
+  if (done < total) {
+    if (!confirm(`⚠️ Tienes ${total-done} pregunta(s) sin responder.\n¿Deseas entregar de todas formas?`)) return;
+  }
+  entregarSimulacro();
+}
+
+async function entregarSimulacro() {
+  clearInterval(timerInterval);
+  try {
+    const res = await fetch(`/estudiante/simulacro/${simId}/resultado`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ respuestas, tiempoUsado: tiempoUsado() })
+    });
+    const data = await res.json();
+    if (data.success) mostrarResultado(data.resultado);
+    else alert('Error al guardar resultado: ' + data.message);
+  } catch(e) {
+    alert('Error de conexión al entregar.');
+  }
+}
+
+// ── MOSTRAR RESULTADO ──
+function mostrarResultado(r) {
+  const nColors = { Avanzado:'#065f46', Satisfactorio:'#1e40af', Mínimo:'#92400e', Insuficiente:'#991b1b', Excelente:'#065f46', Bueno:'#1e40af', Básico:'#92400e', Bajo:'#991b1b' };
+  const nBgs = { Avanzado:'#d1fae5', Satisfactorio:'#dbeafe', Mínimo:'#fef3c7', Insuficiente:'#fee2e2', Excelente:'#d1fae5', Bueno:'#dbeafe', Básico:'#fef3c7', Bajo:'#fee2e2' };
+  const barColors = { 0:'#dc2626', 35:'#d97706', 65:'#2563eb', 80:'#16a34a' };
+  function barColor(pct) { return pct>=80?'#16a34a':pct>=65?'#2563eb':pct>=35?'#d97706':'#dc2626'; }
+
+  const areasHtml = (r.resultadoAreas||[]).map(a => `
+    <div class="area-res-card">
+      <div class="arc-top">
+        <div class="arc-name">${a.area}</div>
+        <div class="arc-badges">
+          ${a.peso?`<span class="arc-peso">Peso: ${a.peso}%</span>`:''}
+          ${a.nivel?`<span class="arc-nivel" style="background:${nBgs[a.nivel]||'#f1f5f9'};color:${nColors[a.nivel]||'#64748b'}">${a.nivel}</span>`:''}
+        </div>
+      </div>
+      <div class="arc-meta">
+        <span>✅ ${a.correctas} de ${a.total} correctas</span>
+        <span class="arc-puntaje" style="color:${barColor(a.puntaje)}">${a.puntaje}/100</span>
+      </div>
+      <div class="prg-bar"><div class="prg-fill" style="width:${a.puntaje}%;background:${barColor(a.puntaje)}"></div></div>
+    </div>`).join('');
+
+  document.getElementById('resultadoContent').innerHTML = `
+    <div class="puntaje-global">
+      <div class="pg-num">${r.puntajeGlobal}</div>
+      <div class="pg-label">Puntaje Global · Escala ICFES 0–100</div>
+      <div class="pg-nivel">${r.nivel}</div>
+      <div class="pg-meta">⏱ ${r.tiempoUsado||'N/D'} · ✅ ${r.totalCorrectas}/${r.totalPreguntas} correctas</div>
+    </div>
+    <strong style="display:block;margin-bottom:12px;color:var(--azul)">📊 Resultados por Área:</strong>
+    ${areasHtml}
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 14px;margin-top:10px;font-size:0.85rem;color:#166534;text-align:center">
+      Tu resultado fue guardado en tu historial de progreso.
+    </div>`;
+
+  document.getElementById('resultadoOverlay').classList.add('open');
+  setTimeout(() => { document.querySelectorAll('.prg-fill').forEach(el => { const w=el.style.width; el.style.width='0'; setTimeout(()=>el.style.width=w,100); }); }, 200);
+}
+
+// ── RESIZE HANDLE ──
+let isResizing = false;
+document.getElementById('resizeHandle').addEventListener('mousedown', () => { isResizing=true; document.body.style.userSelect='none'; });
+document.addEventListener('mousemove', e => {
+  if (!isResizing) return;
+  const pdfZone = document.getElementById('pdfZone');
+  const container = document.querySelector('.split-container');
+  const rect = container.getBoundingClientRect();
+  const newH = Math.max(80, Math.min(e.clientY - rect.top, rect.height - 200));
+  pdfZone.style.flex = `0 0 ${newH}px`;
+  pdfZone.style.maxHeight = `${newH}px`;
+  pdfZone.style.minHeight = `${newH}px`;
+});
+document.addEventListener('mouseup', () => { isResizing=false; document.body.style.userSelect=''; });
+
+init();
+</script>
+</body>
+</html>

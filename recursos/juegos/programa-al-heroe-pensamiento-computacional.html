@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa al Héroe – ENSAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100vw; height:100vh; overflow:hidden; background:#070c17; font-family:'Nunito',sans-serif; color:#e8f0ff; }
+
+#app {
+  display: grid;
+  grid-template-rows: 46px 1fr;
+  grid-template-columns: 1fr 310px;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+}
+
+/* ══ TOP BAR ══ */
+#top {
+  grid-column: 1 / -1; grid-row: 1;
+  background: linear-gradient(90deg,#07111f,#0e1b30,#07111f);
+  border-bottom: 2px solid rgba(79,195,247,.28);
+  display: flex; align-items: center; padding: 0 16px; gap: 14px;
+  position: relative; z-index: 10;
+}
+#top::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg,transparent,#4fc3f7,#7c4dff,transparent);
+}
+.logo { font-family:'Orbitron',sans-serif; font-size:.9rem; font-weight:900; color:#4fc3f7; letter-spacing:2px; white-space:nowrap; line-height:1.15; text-shadow:0 0 20px rgba(79,195,247,.5); }
+.logo small { font-size:.5rem; color:#4e628a; letter-spacing:3px; display:block; margin-top:1px; }
+#lvl-strip { display:flex; gap:3px; flex:1; justify-content:center; flex-wrap:wrap; }
+.ld { width:30px; height:30px; border-radius:6px; background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.07); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Orbitron',sans-serif; font-size:.56rem; font-weight:700; color:#4e628a; cursor:pointer; transition:all .18s; gap:1px; }
+.ld:hover { border-color:#4fc3f7; color:#4fc3f7; background:rgba(79,195,247,.08); }
+.ld.act  { background:rgba(79,195,247,.15); border-color:#4fc3f7; color:#4fc3f7; }
+.ld.done { border-color:#00e676; color:#00e676; }
+.ld.lock { opacity:.18; cursor:not-allowed; }
+.ld .ls  { font-size:.32rem; line-height:1; }
+#score   { font-size:1.1rem; letter-spacing:4px; white-space:nowrap; }
+
+/* ══ BOARD ══ */
+#board {
+  grid-column:1; grid-row:2;
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 44% 44%,#0d1a2e 0%,#070c17 72%);
+}
+#gc { display:block; }
+
+/* ══ PANEL ══ */
+#panel {
+  grid-column:2; grid-row:2;
+  background:linear-gradient(180deg,#0b1320,#070c18);
+  border-left:2px solid rgba(79,195,247,.13);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  padding:9px 10px; gap:7px;
+}
+.sec { font-family:'Orbitron',sans-serif; font-size:.48rem; font-weight:700; color:#3b5070; letter-spacing:3px; text-transform:uppercase; display:flex; align-items:center; gap:6px; margin-bottom:1px; flex-shrink:0; }
+.sec::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.05); }
+
+/* Mission */
+#mbar { flex-shrink:0; background:rgba(255,145,0,.07); border:1px solid rgba(255,145,0,.26); border-left:3px solid #ff9100; border-radius:8px; padding:7px 11px; display:flex; align-items:flex-start; gap:8px; }
+.m-ico { font-size:1.25rem; flex-shrink:0; margin-top:1px; }
+.m-lbl { font-size:.48rem; font-weight:800; color:#ff9100; letter-spacing:3px; text-transform:uppercase; margin-bottom:2px; }
+.m-txt { font-size:.78rem; font-weight:700; line-height:1.3; }
+
+/* Narration */
+#narbar { flex-shrink:0; background:rgba(124,77,255,.07); border:1px solid rgba(124,77,255,.18); border-radius:7px; padding:5px 9px; display:flex; align-items:center; gap:6px; }
+#nar-ico { font-size:.9rem; display:none; }
+#nar-ico.on { display:inline; animation:nb .44s ease infinite alternate; }
+@keyframes nb { to { transform:scale(1.25); } }
+#nar-txt { font-size:.68rem; font-weight:600; color:#9a78d0; flex:1; font-style:italic; line-height:1.35; }
+#btn-sp { background:rgba(124,77,255,.22); border:1.5px solid rgba(124,77,255,.44); color:#c49de8; border-radius:5px; padding:3px 8px; font-size:.64rem; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; white-space:nowrap; transition:all .15s; flex-shrink:0; }
+#btn-sp:hover { background:rgba(124,77,255,.42); }
+
+/* ══════════════════════════════════════════
+   D-PAD  —  orientado al tablero
+   Los 4 botones corresponden a las 4
+   direcciones ABSOLUTAS del plano 2D:
+   ▲ ARRIBA    (mueve hacia fila-1)
+   ▼ ABAJO     (mueve hacia fila+1)
+   ◀ IZQUIERDA (mueve hacia col-1)
+   ▶ DERECHA   (mueve hacia col+1)
+   El robot gira automáticamente al ejecutar.
+══════════════════════════════════════════ */
+#cmd-box { flex-shrink:0; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:10px 9px; }
+
+#dpad {
+  display: grid;
+  grid-template-columns: 68px 68px 68px;
+  grid-template-rows:    68px 68px 68px;
+  gap: 5px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.dp {
+  border:none; border-radius:11px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; transition:all .1s; position:relative; overflow:hidden; user-select:none;
+}
+.dp:active { transform:scale(.86) translateY(2px) !important; filter:brightness(1.3); }
+.dp::before { content:''; position:absolute; inset:0; border-radius:11px; background:rgba(255,255,255,.14); opacity:0; transition:opacity .1s; }
+.dp:hover::before { opacity:1; }
+
+/* Arrow SVG */
+.dp svg { width:30px; height:30px; flex-shrink:0; }
+/* Label below arrow */
+.dp-lbl { font-size:.62rem; font-weight:900; letter-spacing:.5px; line-height:1; }
+/* Sublabel (orientation hint) in smaller text */
+.dp-sub { font-size:.48rem; font-weight:700; opacity:.65; letter-spacing:.3px; line-height:1; }
+
+/* ▲ ARRIBA — grid col2 row1 */
+.dp-up {
+  grid-column:2; grid-row:1;
+  background:linear-gradient(170deg,#1a4ea8,#0d3582);
+  border-bottom:4px solid #082266; color:#90caf9;
+  box-shadow:0 4px 14px rgba(13,53,130,.5);
+}
+/* ◀ IZQUIERDA — col1 row2 */
+.dp-lt {
+  grid-column:1; grid-row:2;
+  background:linear-gradient(170deg,#007282,#004f5e);
+  border-bottom:4px solid #002e3a; color:#80deea;
+  box-shadow:0 4px 14px rgba(0,79,94,.5);
+}
+/* Robot center — col2 row2 */
+.dp-cx {
+  grid-column:2; grid-row:2;
+  background:rgba(255,255,255,.03);
+  border-radius:50% !important;
+  border:2px solid rgba(255,255,255,.1);
+  font-size:1.4rem;
+  display:flex; align-items:center; justify-content:center;
+  cursor:default;
+}
+/* ▶ DERECHA — col3 row2 */
+.dp-rt {
+  grid-column:3; grid-row:2;
+  background:linear-gradient(170deg,#155eb8,#0a3e8e);
+  border-bottom:4px solid #062870; color:#90caf9;
+  box-shadow:0 4px 14px rgba(10,62,142,.5);
+}
+/* ▼ ABAJO — col2 row3 */
+.dp-dn {
+  grid-column:2; grid-row:3;
+  background:linear-gradient(170deg,#4020a0,#2c1480);
+  border-bottom:4px solid #1a0860; color:#b39ddb;
+  box-shadow:0 4px 14px rgba(44,20,128,.5);
+}
+
+/* ══ Info tag under dpad ══ */
+#dir-hint {
+  text-align:center; margin-top:6px;
+  font-size:.62rem; color:#3b5070; font-weight:700;
+  background:rgba(255,255,255,.025); border-radius:6px;
+  padding:4px 8px; border:1px solid rgba(255,255,255,.05);
+}
+
+/* Specials */
+#spec { flex-shrink:0; display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:6px; }
+.sp { padding:8px 5px; border-radius:8px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-size:.7rem; font-weight:900; display:flex; align-items:center; justify-content:center; gap:5px; transition:all .1s; }
+.sp:active { transform:scale(.88); }
+.sp.jump { background:linear-gradient(160deg,#e65100,#bf360c); color:#ffccbc; border-bottom:3px solid #7a1c04; }
+.sp.r3   { background:linear-gradient(160deg,#880e4f,#560027); color:#f48fb1; border-bottom:3px solid #380018; }
+.sp.r5   { background:linear-gradient(160deg,#6a1b9a,#4a148c); color:#ce93d8; border-bottom:3px solid #360073; }
+.sp.hide { display:none; }
+
+/* ══ PROGRAM LIST ══ */
+#seq-box { flex:1; min-height:0; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:8px; display:flex; flex-direction:column; }
+#seq-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; flex-shrink:0; }
+#seq-cnt { font-family:'Orbitron',sans-serif; font-size:.56rem; color:#4fc3f7; letter-spacing:2px; }
+#seq-list { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:3px; padding-right:2px; }
+#seq-list::-webkit-scrollbar { width:3px; }
+#seq-list::-webkit-scrollbar-thumb { background:#7c4dff; border-radius:2px; }
+.s-empty { text-align:center; padding:14px 6px; color:#3b5070; font-size:.74rem; border:2px dashed rgba(255,255,255,.07); border-radius:7px; line-height:1.7; }
+.s-item { display:flex; align-items:center; gap:6px; padding:5px 8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:6px; font-size:.74rem; font-weight:700; cursor:pointer; transition:border-color .1s,background .1s; animation:sIn .12s ease; flex-shrink:0; }
+@keyframes sIn { from{opacity:0;transform:translateX(-5px);}to{opacity:1;transform:none;} }
+.s-item:hover { border-color:#ff5252; background:rgba(255,82,82,.07); }
+.s-item.act  { background:rgba(79,195,247,.12); border-color:#4fc3f7; box-shadow:0 0 7px rgba(79,195,247,.22); }
+.s-item.ok   { background:rgba(0,230,118,.08); border-color:#00e676; }
+.s-item.fail { border-color:#ff5252; background:rgba(255,82,82,.1); animation:sShk .26s ease; }
+@keyframes sShk { 0%,100%{transform:none}30%{transform:translateX(-3px)}70%{transform:translateX(3px)} }
+.s-n  { font-family:'Orbitron',sans-serif; font-size:.5rem; color:#3b5070; min-width:13px; }
+.s-ico { font-size:.9rem; }
+.s-nm  { flex:1; font-size:.72rem; }
+.s-del { color:#3b5070; font-size:.66rem; transition:color .1s; flex-shrink:0; }
+.s-del:hover { color:#ff5252; }
+#pb-wrap { height:3px; background:rgba(255,255,255,.05); border-radius:2px; margin-top:5px; overflow:hidden; flex-shrink:0; }
+#pb-fill { height:100%; width:0%; background:linear-gradient(90deg,#7c4dff,#4fc3f7); border-radius:2px; transition:width .18s; }
+
+/* ══ RUN ══ */
+#run { flex-shrink:0; display:flex; flex-direction:column; gap:5px; }
+#spd-row { display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:7px; padding:5px 9px; }
+.spd-l { font-size:.64rem; color:#4e628a; flex-shrink:0; }
+#spd { flex:1; accent-color:#7c4dff; }
+#spd-v { font-family:'Orbitron',sans-serif; font-size:.56rem; color:#4fc3f7; min-width:23px; text-align:right; }
+#btn-run { padding:12px; border:none; border-radius:9px; background:linear-gradient(135deg,#00c853,#00e676); color:#001809; font-family:'Orbitron',sans-serif; font-size:.82rem; font-weight:900; letter-spacing:3px; cursor:pointer; transition:all .18s; border-bottom:4px solid #007830; display:flex; align-items:center; justify-content:center; gap:6px; }
+#btn-run:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,230,118,.38); }
+#btn-run:active:not(:disabled) { transform:translateY(1px); border-bottom-width:2px; }
+#btn-run:disabled { opacity:.32; cursor:not-allowed; transform:none!important; }
+.b2row { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.b2 { padding:7px 4px; border-radius:7px; border:1.5px solid rgba(255,255,255,.1); background:transparent; color:#4e628a; font-family:'Nunito',sans-serif; font-size:.74rem; font-weight:800; cursor:pointer; transition:all .15s; }
+.b2.rst:hover { border-color:#4fc3f7; color:#4fc3f7; }
+.b2.clr:hover { border-color:#ff5252; color:#ff5252; }
+
+#hint { flex-shrink:0; background:rgba(255,215,64,.04); border:1px solid rgba(255,215,64,.2); border-left:3px solid #ffd740; border-radius:7px; padding:5px 9px; font-size:.7rem; line-height:1.45; font-weight:600; }
+#con { flex-shrink:0; background:#060810; border:1px solid rgba(0,230,118,.1); border-radius:7px; padding:6px; font-family:'Courier New',monospace; font-size:.62rem; height:64px; overflow-y:auto; line-height:1.65; }
+#con::-webkit-scrollbar { width:2px; }
+#con::-webkit-scrollbar-thumb { background:#00e676; }
+.cl-ok{color:#00e676;}.cl-err{color:#ff5252;}.cl-info{color:#4fc3f7;}.cl-warn{color:#ffd740;}
+
+/* ══ MODAL ══ */
+#ov { position:fixed; inset:0; background:rgba(0,0,0,.82); display:flex; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(10px); opacity:0; pointer-events:none; transition:opacity .28s; }
+#ov.show { opacity:1; pointer-events:all; }
+.modal { background:linear-gradient(145deg,#101d35,#0b1428); border:2px solid rgba(79,195,247,.32); border-radius:17px; padding:28px 32px; max-width:350px; width:90%; text-align:center; box-shadow:0 0 50px rgba(79,195,247,.14),0 18px 36px rgba(0,0,0,.6); transform:scale(.85); transition:transform .28s; }
+#ov.show .modal { transform:scale(1); }
+.m-e { font-size:3.4rem; margin-bottom:9px; }
+.m-t { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; margin-bottom:6px; }
+.m-t.win{color:#00e676;text-shadow:0 0 18px rgba(0,230,118,.4);}
+.m-msg { font-size:.82rem; color:#7a90b8; margin-bottom:12px; line-height:1.5; font-weight:600; }
+.m-st  { font-size:2rem; margin-bottom:15px; letter-spacing:6px; }
+.m-brow { display:flex; gap:8px; justify-content:center; }
+.mb { padding:9px 18px; border-radius:8px; font-family:'Orbitron',sans-serif; font-size:.62rem; font-weight:700; letter-spacing:2px; cursor:pointer; border:none; transition:all .18s; }
+.mb.p { background:linear-gradient(135deg,#7c4dff,#5e35b1); color:white; }
+.mb.s { background:transparent; border:1.5px solid rgba(255,255,255,.12); color:#4e628a; }
+.mb:hover { transform:translateY(-2px); }
+
+#fxc { position:fixed; inset:0; pointer-events:none; z-index:150; }
+</style>
+</head>
+<body>
+<canvas id="fxc"></canvas>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="top">
+    <div class="logo">🤖 PROGRAMA AL HÉROE<small>LÓGICA COMPUTACIONAL · ENSAS</small></div>
+    <div id="lvl-strip"></div>
+    <div id="score">☆☆☆</div>
+  </div>
+
+  <!-- BOARD -->
+  <div id="board"><canvas id="gc"></canvas></div>
+
+  <!-- PANEL -->
+  <div id="panel">
+
+    <div id="mbar">
+      <div class="m-ico" id="m-ico">🎯</div>
+      <div>
+        <div class="m-lbl">Misión</div>
+        <div class="m-txt" id="m-txt">Cargando...</div>
+      </div>
+    </div>
+
+    <div id="narbar">
+      <span id="nar-ico">🔊</span>
+      <span id="nar-txt">Presiona Narrar para escuchar las instrucciones.</span>
+      <button id="btn-sp" onclick="speak()">🔊 Narrar</button>
+    </div>
+
+    <!-- ══ COMMANDS ══ -->
+    <div id="cmd-box">
+      <div class="sec">🕹️ Comandos — dirección en el tablero</div>
+
+      <!--
+        Los botones representan direcciones ABSOLUTAS en el tablero 2D:
+        ▲ ARRIBA    → mueve el robot hacia la fila superior
+        ◀ IZQUIERDA → mueve el robot hacia la columna izquierda
+        ▶ DERECHA   → mueve el robot hacia la columna derecha
+        ▼ ABAJO     → mueve el robot hacia la fila inferior
+        El robot gira automáticamente en la dirección correcta antes de moverse.
+      -->
+      <div id="dpad">
+
+        <!-- ▲ ARRIBA -->
+        <button class="dp dp-up" onclick="addCmd('north')">
+          <svg viewBox="0 0 30 30"><polygon points="15,3 27,25 3,25" fill="currentColor"/></svg>
+          <span class="dp-lbl">ARRIBA</span>
+          <span class="dp-sub">↑ fila anterior</span>
+        </button>
+
+        <!-- ◀ IZQUIERDA -->
+        <button class="dp dp-lt" onclick="addCmd('west')">
+          <svg viewBox="0 0 30 30"><polygon points="3,15 25,3 25,27" fill="currentColor"/></svg>
+          <span class="dp-lbl">IZQUIERDA</span>
+          <span class="dp-sub">← columna anterior</span>
+        </button>
+
+        <!-- Center: robot icon -->
+        <div class="dp dp-cx" id="dp-robot">🤖</div>
+
+        <!-- ▶ DERECHA -->
+        <button class="dp dp-rt" onclick="addCmd('east')">
+          <svg viewBox="0 0 30 30"><polygon points="27,15 5,3 5,27" fill="currentColor"/></svg>
+          <span class="dp-lbl">DERECHA</span>
+          <span class="dp-sub">→ columna siguiente</span>
+        </button>
+
+        <!-- ▼ ABAJO -->
+        <button class="dp dp-dn" onclick="addCmd('south')">
+          <svg viewBox="0 0 30 30"><polygon points="15,27 3,5 27,5" fill="currentColor"/></svg>
+          <span class="dp-lbl">ABAJO</span>
+          <span class="dp-sub">↓ fila siguiente</span>
+        </button>
+
+      </div><!-- /dpad -->
+
+      <!-- Direction hint showing current robot facing -->
+      <div id="dir-hint">🤖 El robot mira: <span id="dir-label">→ DERECHA</span></div>
+
+      <!-- Special action buttons -->
+      <div id="spec">
+        <button class="sp jump hide" id="eb-jump" onclick="addCmd('jump-e')">🦘 Saltar →</button>
+        <button class="sp r3   hide" id="eb-rep3" onclick="addCmd('rep3')">🔁 Repetir×3</button>
+        <button class="sp r5   hide" id="eb-rep5" onclick="addCmd('rep5')">🔂 Repetir×5</button>
+      </div>
+    </div><!-- /cmd-box -->
+
+    <!-- PROGRAM SEQUENCE -->
+    <div id="seq-box">
+      <div id="seq-hdr">
+        <div class="sec" style="margin:0;flex:1">⚙️ Mi Programa</div>
+        <div id="seq-cnt">0 pasos</div>
+      </div>
+      <div id="seq-list"><div class="s-empty">← Agrega comandos<br>para programar al héroe</div></div>
+      <div id="pb-wrap"><div id="pb-fill"></div></div>
+    </div>
+
+    <!-- RUN CONTROLS -->
+    <div id="run">
+      <div id="spd-row">
+        <span class="spd-l">⚡ Velocidad</span>
+        <input type="range" id="spd" min="1" max="5" value="3">
+        <span id="spd-v">×3</span>
+      </div>
+      <button id="btn-run" onclick="runProgram()">▶ EJECUTAR</button>
+      <div class="b2row">
+        <button class="b2 rst" onclick="resetLevel()">↩ Reiniciar</button>
+        <button class="b2 clr" onclick="clearProg()">✕ Borrar</button>
+      </div>
+    </div>
+
+    <div id="hint">💡 <span id="hint-txt">Observa el mapa antes de programar.</span></div>
+    <div id="con"></div>
+
+  </div><!-- /panel -->
+</div><!-- /app -->
+
+<!-- WIN MODAL -->
+<div id="ov">
+  <div class="modal">
+    <div class="m-e" id="m-e">🎉</div>
+    <div class="m-t win" id="m-t">¡COMPLETADO!</div>
+    <div class="m-msg"   id="m-msg"></div>
+    <div class="m-st"    id="m-st">⭐⭐⭐</div>
+    <div class="m-brow">
+      <button class="mb s" onclick="closeModal()">Ver resultado</button>
+      <button class="mb p" id="m-next">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════
+   GRID  20×20
+═══════════════════════════════ */
+const GW=20, GH=20;
+const F=0, W=1, GOAL=2, ST=3;
+
+/*
+  DIRECTION MODEL — ABSOLUTE (board-oriented)
+  ─────────────────────────────────────────────
+  Commands correspond to absolute board directions:
+    north → row - 1  (up on screen)
+    south → row + 1  (down on screen)
+    west  → col - 1  (left on screen)
+    east  → col + 1  (right on screen)
+  
+  The robot has an internal facing direction (for rendering only).
+  When a command is executed, the robot automatically faces the
+  correct direction THEN moves. No manual turn commands needed.
+  
+  Internal dir index: 0=east 1=south 2=west 3=north
+*/
+const DIR_MAP = {
+  north: { dx:0, dy:-1, dir:3, label:'↑ ARRIBA'  },
+  south: { dx:0, dy: 1, dir:1, label:'↓ ABAJO'   },
+  west:  { dx:-1,dy:0,  dir:2, label:'← IZQUIERDA'},
+  east:  { dx:1, dy:0,  dir:0, label:'→ DERECHA'  },
+};
+const DIR_ARROWS=['→','↓','←','↑'];
+const DIR_NAMES =['DERECHA','ABAJO','IZQUIERDA','ARRIBA'];
+const ROT = [0, Math.PI/2, Math.PI, -Math.PI/2]; // east south west north
+
+/* ═══════════════════════════════
+   AUDIO
+═══════════════════════════════ */
+let _AC;
+const getAC=()=>{if(!_AC)_AC=new(window.AudioContext||window.webkitAudioContext)();return _AC;};
+const tone=(f,d,t='sine',v=.11)=>{try{const a=getAC(),o=a.createOscillator(),g=a.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+d);}catch(e){}};
+const noise=(d=.08,v=.1)=>{try{const a=getAC(),n=a.sampleRate*d,b=a.createBuffer(1,n,a.sampleRate),dd=b.getChannelData(0);for(let i=0;i<n;i++)dd[i]=(Math.random()*2-1);const s=a.createBufferSource(),g=a.createGain();s.buffer=b;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);s.connect(g);g.connect(a.destination);s.start();}catch(e){}};
+const SFX={
+  move :()=>tone(440,.05,'square',.07),
+  turn :()=>tone(600,.04,'sawtooth',.06),
+  wall :()=>{noise(.1,.13);tone(130,.18,'sawtooth',.09);},
+  star :()=>{[660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.09,'sine',.09),i*50));},
+  win  :()=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.14,'sine',.09),i*85));},
+  jump :()=>{tone(320,.05,'square',.07);tone(600,.09,'sine',.08);},
+  fail :()=>{[300,230,160].forEach((f,i)=>setTimeout(()=>tone(f,.13,'sawtooth',.09),i*65));},
+  start:()=>{[262,330,392,523].forEach((f,i)=>setTimeout(()=>tone(f,.1,'sine',.07),i*65));},
+  dance:()=>{[523,659,784,659,1047].forEach((f,i)=>setTimeout(()=>tone(f,.08,'sine',.08),i*70));},
+};
+
+/* ═══════════════════════════════
+   TTS
+═══════════════════════════════ */
+function narrate(t){
+  document.getElementById('nar-txt').textContent=t;
+  if(!window.speechSynthesis)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='es-CO'; u.rate=.93; u.pitch=1.05; u.volume=1;
+    const ico=document.getElementById('nar-ico');
+    ico.classList.add('on');
+    u.onend=u.onerror=()=>ico.classList.remove('on');
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speak(){narrate(LEVELS[GS.cur].nar||LEVELS[GS.cur].mission); SFX.start();}
+
+/* ═══════════════════════════════
+   PARTICLES
+═══════════════════════════════ */
+const FXC=document.getElementById('fxc'), FXCTX=FXC.getContext('2d');
+let parts=[];
+const resizeFX=()=>{FXC.width=innerWidth; FXC.height=innerHeight;};
+window.addEventListener('resize',()=>{resizeFX(); sizeCanvas();});
+resizeFX();
+const burst=(x,y,col,n=18)=>{for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*4;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,col,life:1,r:2+Math.random()*4});}};
+(function fxLoop(){FXCTX.clearRect(0,0,FXC.width,FXC.height);parts=parts.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.1;p.life-=.022;FXCTX.globalAlpha=p.life;FXCTX.fillStyle=p.col;FXCTX.beginPath();FXCTX.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);FXCTX.fill();return p.life>0;});FXCTX.globalAlpha=1;requestAnimationFrame(fxLoop);})();
+
+/* ═══════════════════════════════
+   LEVEL GENERATION  20×20
+═══════════════════════════════ */
+function mkRng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/0x100000000;};}
+
+function genLevel(idx){
+  const rng=mkRng(idx*41221+13337);
+  const grid=Array.from({length:GH},()=>new Uint8Array(GW));
+  const density=.10+idx*.018;
+  const blocks=2+Math.floor(idx*1.1);
+  for(let b=0;b<blocks;b++){
+    const bw=2+Math.floor(rng()*4),bh=2+Math.floor(rng()*4);
+    const bx=1+Math.floor(rng()*(GW-bw-2)),by=1+Math.floor(rng()*(GH-bh-2));
+    for(let r=by;r<by+bh&&r<GH-1;r++)for(let c=bx;c<bx+bw&&c<GW-1;c++)grid[r][c]=W;
+  }
+  for(let r=1;r<GH-1;r++)for(let c=1;c<GW-1;c++)if(rng()<density)grid[r][c]=W;
+  const hy=1+Math.floor(rng()*4);
+  const gx=GW-2-Math.floor(rng()*3), gy=GH-2-Math.floor(rng()*3);
+  grid[gy][gx]=GOAL;
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const rh=hy+dy,ch=1+dx; if(rh>0&&rh<GH-1&&ch>0&&ch<GW-1)grid[rh][ch]=F;
+    const rg=gy+dy,cg=gx+dx; if(rg>0&&rg<GH-1&&cg>0&&cg<GW-1&&grid[rg][cg]!==GOAL)grid[rg][cg]=F;
+  }
+  const nStars=Math.min(Math.floor(idx/2)+1,5); let sc=0;
+  for(let t=0;sc<nStars&&t<400;t++){const sx=2+Math.floor(rng()*(GW-4)),sy=2+Math.floor(rng()*(GH-4));if(grid[sy][sx]===F){grid[sy][sx]=ST;sc++;}}
+  // BFS carve
+  const vis=Array.from({length:GH},()=>new Uint8Array(GW));
+  const q=[[1,hy]]; vis[hy][1]=1; let found=false;
+  const DX4=[1,0,-1,0],DY4=[0,1,0,-1];
+  while(q.length&&!found){const[cx,cy]=q.shift();if(cx===gx&&cy===gy){found=true;break;}for(let d=0;d<4;d++){const nx=cx+DX4[d],ny=cy+DY4[d];if(nx>=0&&nx<GW&&ny>=0&&ny<GH&&!vis[ny][nx]&&grid[ny][nx]!==W){vis[ny][nx]=1;q.push([nx,ny]);}}}
+  if(!found){let cx=1,cy=hy;while(cx!==gx){grid[cy][cx]=F;cx+=cx<gx?1:-1;}while(cy!==gy){grid[cy][cx]=F;cy+=cy<gy?1:-1;}}
+  for(let c=0;c<GW;c++){grid[0][c]=W;grid[GH-1][c]=W;}
+  for(let r=0;r<GH;r++){grid[r][0]=W;grid[r][GW-1]=W;}
+  grid[hy][1]=F;
+  return {grid,heroY:hy,goalX:gx,goalY:gy,nStars:sc};
+}
+
+/* ═══════════════════════════════
+   LEVEL CONFIG
+═══════════════════════════════ */
+const CFG=[
+  {name:"Primer Paso",icon:"🌱",diff:"⭐ Básico",extra:[],
+   mission:"Avanza hasta la bandera 🚩. Los botones indican la dirección en el tablero.",
+   nar:"¡Hola! Soy tu robot. Los botones corresponden exactamente a las direcciones del tablero. ARRIBA sube en el mapa, ABAJO baja, IZQUIERDA va a la izquierda y DERECHA a la derecha.",
+   hint:"DERECHA te mueve hacia la columna siguiente en el mapa.",stars:[5,8,14]},
+  {name:"Primera Curva",icon:"↩️",diff:"⭐ Básico",extra:[],
+   mission:"La meta está más abajo. ¡Combina DERECHA y ABAJO!",
+   nar:"Ahora necesitas cambiar de dirección. Presiona DERECHA para avanzar, luego ABAJO para bajar en el tablero. Los botones te indican exactamente a dónde irás.",
+   hint:"Usa DERECHA para avanzar y ABAJO para descender.",stars:[6,9,15]},
+  {name:"Laberinto 1",icon:"🌀",diff:"⭐ Básico",extra:[],
+   mission:"Sortea los muros usando las 4 direcciones del tablero.",
+   nar:"Hay muros en el mapa. Usa las cuatro direcciones del tablero para rodearlos. Recuerda que ARRIBA sube, ABAJO baja, IZQUIERDA va a la izquierda y DERECHA a la derecha.",
+   hint:"Usa las 4 direcciones para navegar el laberinto.",stars:[7,11,18]},
+  {name:"Recoge Estrellas",icon:"⭐",diff:"⭐ Básico",extra:['bk'],
+   mission:"Recoge TODAS las estrellas antes de llegar a la bandera.",
+   nar:"Hay estrellas doradas en el mapa. Debes pasar sobre ellas para recogerlas. Planifica la ruta que pase por todas las estrellas antes de llegar a la meta.",
+   hint:"Recoge todas las estrellas antes de llegar a la meta.",stars:[8,13,20],needAll:true},
+  {name:"Laberinto 2",icon:"🏗️",diff:"⭐⭐ Medio",extra:[],
+   mission:"Laberinto más denso. Usa todas las direcciones.",
+   nar:"Los muros son más densos. Necesitas usar las cuatro direcciones del tablero para encontrar el camino. Piensa en el tablero como un mapa con Norte, Sur, Este y Oeste.",
+   hint:"Planifica cada segmento del camino antes de programar.",stars:[9,14,22]},
+  {name:"¡Salta!",icon:"🦘",diff:"⭐⭐ Medio",extra:['jump'],
+   mission:"Usa SALTAR para cruzar 2 casillas de una sola vez.",
+   nar:"Nuevo comando desbloqueado: SALTAR. Salta dos casillas en la dirección que elijas. Útil para cruzar muros de una sola celda.",
+   hint:"SALTAR + dirección = avanza 2 casillas en esa dirección.",stars:[8,12,19]},
+  {name:"Curvas y Giros",icon:"🔄",diff:"⭐⭐ Medio",extra:['jump'],
+   mission:"El camino da vueltas. Alterna las 4 direcciones del tablero.",
+   nar:"El laberinto tiene muchas curvas. Alterna las cuatro direcciones del tablero para seguir el camino. Observa bien antes de programar.",
+   hint:"Alterna las cuatro direcciones para seguir el camino.",stars:[10,15,24]},
+  {name:"Bucles ×3",icon:"🔁",diff:"⭐⭐⭐ Avanzado",extra:['rep3'],
+   mission:"Usa REPETIR×3 para repetir una dirección 3 veces.",
+   nar:"Nuevo comando: REPETIR por 3. Agrega Repetir 3 y luego una dirección, y el robot se moverá 3 veces en esa dirección. Es como un bucle de programación.",
+   hint:"Rep×3 + DERECHA = avanzar 3 casillas a la derecha.",stars:[6,9,14],loop:true},
+  {name:"Bucles ×5",icon:"🔂",diff:"⭐⭐⭐ Avanzado",extra:['rep3','rep5'],
+   mission:"Combina Repetir×3 y Repetir×5 para resolver eficientemente.",
+   nar:"Ahora tienes dos bucles. Repetir por 3 y Repetir por 5. Cada uno repite la siguiente dirección ese número de veces.",
+   hint:"Combina bucles para los tramos más largos del camino.",stars:[5,8,13],loop:true},
+  {name:"Zigzag",icon:"⚡",diff:"⭐⭐⭐ Avanzado",extra:['rep3'],
+   mission:"El camino zigzaguea. Alterna DERECHA y ABAJO con precisión.",
+   nar:"El camino zigzaguea entre muros. Necesitas alternar las direcciones con mucha precisión. Planifica cada segmento antes de programar.",
+   hint:"Cuenta exactamente cuántos pasos en cada dirección.",stars:[10,16,25]},
+  {name:"La Cruz",icon:"✝️",diff:"⭐⭐⭐⭐ Difícil",extra:['rep3'],
+   mission:"Laberinto complejo. Analiza todo el mapa antes de programar.",
+   nar:"Nivel difícil. Muchos obstáculos. Analiza el mapa completo antes de escribir tu programa. Una buena planificación vale más que muchos intentos fallidos.",
+   hint:"Analiza el mapa completo antes de programar.",stars:[11,17,26]},
+  {name:"Minas",icon:"💣",diff:"⭐⭐⭐⭐ Difícil",extra:['jump','rep3'],
+   mission:"Muros por todos lados. Solo existe un camino seguro.",
+   nar:"Muros por todas partes. El espacio libre es muy reducido. Usa los saltos para cruzar zonas bloqueadas y llegar a la meta.",
+   hint:"Usa SALTAR para cruzar zonas muy bloqueadas.",stars:[11,17,27]},
+  {name:"Colecta Grande",icon:"🌟",diff:"⭐⭐⭐⭐ Difícil",extra:['rep3'],
+   mission:"Recoge todas las estrellas dispersas por el laberinto.",
+   nar:"Muchas estrellas esperan. Planifica una ruta eficiente que pase por todas antes de llegar a la meta. El orden en que las recojas importa para la eficiencia.",
+   hint:"La ruta más corta que toca todas las estrellas gana.",stars:[12,18,28],needAll:true},
+  {name:"El Tobogán",icon:"🎢",diff:"⭐⭐⭐⭐ Difícil",extra:['jump','rep3','rep5'],
+   mission:"El camino baja en diagonal. Combina ABAJO y DERECHA.",
+   nar:"El camino baja en diagonal. Combina ABAJO y DERECHA estratégicamente. Usa bucles para los tramos largos.",
+   hint:"Combina todos los comandos disponibles con eficiencia.",stars:[12,18,29]},
+  {name:"Callejones",icon:"🏙️",diff:"⭐⭐⭐⭐⭐ Experto",extra:['jump','rep3','rep5'],
+   mission:"Muchos callejones sin salida. Encuentra el único camino.",
+   nar:"Nivel experto. Muchos callejones. Cuando llegues a uno sin salida, deberás retroceder usando la dirección opuesta.",
+   hint:"Cuando llegues a un callejón, usa la dirección opuesta para salir.",stars:[13,19,30]},
+  {name:"El Gigante",icon:"🗺️",diff:"⭐⭐⭐⭐⭐ Experto",extra:['jump','rep3','rep5'],
+   mission:"Laberinto máximo en 20×20. ¡El mayor reto!",
+   nar:"El laberinto más complejo. Identifica patrones y usa bucles para ser eficiente. Piensa en el tablero como un mapa de coordenadas.",
+   hint:"Identifica patrones y usa bucles para ahorrar pasos.",stars:[13,20,31]},
+  {name:"Cinco Estrellas",icon:"💫",diff:"⭐⭐⭐⭐⭐ Experto",extra:['jump','rep3','rep5'],
+   mission:"Recoge las 5 estrellas en el orden más eficiente.",
+   nar:"Cinco estrellas en el mapa. El orden en que las recojas determina la eficiencia de tu programa. Planifica la ruta óptima.",
+   hint:"El orden óptimo de recolección ahorra muchos pasos.",stars:[13,20,32],needAll:true},
+  {name:"Laberinto Final",icon:"🌌",diff:"⭐⭐⭐⭐⭐ Experto",extra:['jump','rep3','rep5'],
+   mission:"El laberinto más complejo. Solo los mejores llegarán.",
+   nar:"El penúltimo desafío. Pondrá a prueba todo lo aprendido. Usa las cuatro direcciones del tablero con precisión milimétrica.",
+   hint:"Usa absolutamente todos los comandos disponibles.",stars:[14,21,33]},
+  {name:"Misión Imposible",icon:"🔥",diff:"🔥 Legendario",extra:['jump','rep3','rep5'],
+   mission:"Recoge estrellas en el laberinto más denso.",
+   nar:"Casi leyenda. El laberinto más denso. Solo los programadores más precisos completan este nivel.",
+   hint:"Solo los mejores programadores completan este nivel.",stars:[14,22,34],needAll:true},
+  {name:"Maestro Programador",icon:"🏆",diff:"🏆 LEGENDARIO",extra:['jump','rep3','rep5'],
+   mission:"El nivel definitivo. ¡Demuestra que eres el Maestro!",
+   nar:"El nivel legendario. El mayor reto. Si llegas a la meta eres un verdadero Maestro de la Programación en el plano cartesiano.",
+   hint:"Los maestros no necesitan pistas. ¡Tú puedes!",stars:[15,23,35],needAll:true},
+];
+
+const LEVELS = CFG.map((cfg,i)=>({...cfg,...genLevel(i)}));
+
+/* ═══════════════════════════════
+   CANVAS  — auto-fit 20×20
+═══════════════════════════════ */
+const CANVAS = document.getElementById('gc');
+const CTX    = CANVAS.getContext('2d');
+let CS = 32;
+const SW = ()=> CS + 14;  // staging zone width
+
+function sizeCanvas(){
+  const ba=document.getElementById('board');
+  const bw=ba.clientWidth, bh=ba.clientHeight;
+  const csW=Math.floor((bw-SW()-8)/GW);
+  const csH=Math.floor((bh-8)/GH);
+  CS=Math.max(14,Math.min(csW,csH));
+  CANVAS.width  = SW()+GW*CS;
+  CANVAS.height = GH*CS;
+  CANVAS.style.position='absolute';
+  CANVAS.style.left=Math.max(0,Math.floor((bw-CANVAS.width)/2))+'px';
+  CANVAS.style.top =Math.max(0,Math.floor((bh-CANVAS.height)/2))+'px';
+}
+
+/* ═══════════════════════════════
+   GAME STATE
+═══════════════════════════════ */
+const GS={cur:0,unlocked:1,prog:[],running:false,collected:0,best:new Array(20).fill(0)};
+const ROB={gx:1,gy:0,outside:true,startY:0,dir:0,face:'normal',scale:1,trail:[]};
+// dir: 0=east(→) 1=south(↓) 2=west(←) 3=north(↑)
+
+/* ═══════════════════════════════
+   COMMANDS  — absolute board directions
+═══════════════════════════════ */
+const CMDS={
+  north:  {label:'Arriba ↑',    icon:'⬆️'},
+  south:  {label:'Abajo ↓',     icon:'⬇️'},
+  west:   {label:'Izquierda ←', icon:'⬅️'},
+  east:   {label:'Derecha →',   icon:'➡️'},
+  'jump-n':{label:'Saltar ↑×2', icon:'🦘'},
+  'jump-s':{label:'Saltar ↓×2', icon:'🦘'},
+  'jump-w':{label:'Saltar ←×2', icon:'🦘'},
+  'jump-e':{label:'Saltar →×2', icon:'🦘'},
+  rep3:   {label:'Repetir×3',   icon:'🔁'},
+  rep5:   {label:'Repetir×5',   icon:'🔂'},
+};
+
+/* ═══════════════════════════════
+   RENDER LOOP
+═══════════════════════════════ */
+const FACES={normal:'🤖',happy:'😄',sad:'😟',star:'🤩',cool:'😎',think:'🤔'};
+
+function renderAll(){
+  requestAnimationFrame(renderAll);
+  const t  = Date.now();
+  const lv = LEVELS[GS.cur];
+  const sw = SW();
+  const ctx= CTX;
+
+  ctx.clearRect(0,0,CANVAS.width,CANVAS.height);
+  ctx.fillStyle='#070c17'; ctx.fillRect(0,0,CANVAS.width,CANVAS.height);
+
+  /* staging zone */
+  ctx.save();
+  ctx.strokeStyle='rgba(79,195,247,.38)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.strokeRect(2,ROB.startY*CS,CS+6,CS); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(79,195,247,.05)'; ctx.fillRect(2,ROB.startY*CS,CS+6,CS);
+  ctx.fillStyle='rgba(79,195,247,.5)';
+  ctx.font=`bold ${Math.max(7,Math.floor(CS*.22))}px Orbitron,monospace`;
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText('INICIO',(CS+8)/2+1,ROB.startY*CS-3);
+  if(ROB.outside){
+    const ox=Math.sin(t*.004)*3;
+    ctx.font=`${Math.floor(CS*.62)}px serif`; ctx.textBaseline='middle'; ctx.fillStyle='#4fc3f7';
+    ctx.fillText('➡',(CS+8)/2+1+ox,ROB.startY*CS+CS/2);
+  }
+  ctx.restore();
+
+  /* grid */
+  for(let r=0;r<GH;r++){
+    for(let c=0;c<GW;c++){
+      const x=sw+c*CS, y=r*CS, v=lv.grid[r][c];
+      if(v===W){
+        ctx.fillStyle='#190a03'; ctx.fillRect(x,y,CS,CS);
+        ctx.strokeStyle='rgba(200,65,5,.22)'; ctx.lineWidth=.4;
+        for(let bl=4;bl<CS;bl+=5){ctx.beginPath();ctx.moveTo(x,y+bl);ctx.lineTo(x+CS,y+bl);ctx.stroke();}
+        for(let bc=4;bc<CS;bc+=6){ctx.beginPath();ctx.moveTo(x+bc,y);ctx.lineTo(x+bc,y+CS);ctx.stroke();}
+        ctx.strokeStyle='rgba(255,95,35,.52)'; ctx.lineWidth=.55; ctx.strokeRect(x+.3,y+.3,CS-.6,CS-.6);
+        ctx.globalAlpha=.9; ctx.font=`${Math.floor(CS*.8)}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🧱',x+CS/2,y+CS/2); ctx.globalAlpha=1;
+      } else if(v===GOAL){
+        const ga=.22+Math.sin(t*.0025)*.17;
+        ctx.fillStyle='#003820'; ctx.fillRect(x,y,CS,CS);
+        const rg=ctx.createRadialGradient(x+CS/2,y+CS/2,0,x+CS/2,y+CS/2,CS*.55);
+        rg.addColorStop(0,`rgba(0,230,118,${ga*.6})`); rg.addColorStop(1,'rgba(0,230,118,0)');
+        ctx.fillStyle=rg; ctx.fillRect(x,y,CS,CS);
+        ctx.strokeStyle=`rgba(0,230,118,${ga+.38})`; ctx.lineWidth=.8; ctx.strokeRect(x+.5,y+.5,CS-1,CS-1);
+        ctx.globalAlpha=.9+ga*.1; ctx.font=`${Math.floor(CS*.74)}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🚩',x+CS/2,y+CS/2); ctx.globalAlpha=1;
+      } else if(v===ST){
+        const sa=.32+Math.sin(t*.003+r*3+c)*.2;
+        ctx.fillStyle='#160e00'; ctx.fillRect(x,y,CS,CS);
+        ctx.strokeStyle=`rgba(255,215,64,${sa+.22})`; ctx.lineWidth=.7; ctx.strokeRect(x+.5,y+.5,CS-1,CS-1);
+        ctx.globalAlpha=.88+sa*.1; ctx.font=`${Math.floor(CS*.7)}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('⭐',x+CS/2,y+CS/2); ctx.globalAlpha=1;
+      } else {
+        ctx.fillStyle='#111e32'; ctx.fillRect(x,y,CS,CS);
+        ctx.fillStyle='rgba(79,195,247,.09)'; ctx.beginPath(); ctx.arc(x+CS/2,y+CS/2,.9,0,Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle='rgba(79,195,247,.19)'; ctx.lineWidth=.38; ctx.strokeRect(x,y,CS,CS);
+    }
+  }
+
+  /* trail */
+  ROB.trail.forEach((tr,i)=>{
+    const a=(i+1)/ROB.trail.length*.28;
+    ctx.fillStyle=`rgba(124,77,255,${a})`;
+    ctx.beginPath(); ctx.arc(sw+tr.x*CS+CS/2,tr.y*CS+CS/2,CS*.15,0,Math.PI*2); ctx.fill();
+  });
+
+  /* robot */
+  const px = ROB.outside ? ((CS+8)/2+2) : (sw+ROB.gx*CS+CS/2);
+  const py = ROB.gy*CS+CS/2;
+  ctx.save();
+  ctx.translate(px,py);
+  ctx.rotate(ROT[ROB.dir]);
+  ctx.scale(ROB.scale,ROB.scale);
+  const r=CS*.42, pulse=.4+Math.sin(t*.005)*.38;
+  ctx.strokeStyle=`rgba(79,195,247,${.26+pulse*.26})`; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.arc(0,0,r*1.55,0,Math.PI*2); ctx.stroke();
+  const gl=ctx.createRadialGradient(0,0,0,0,0,r*1.9);
+  gl.addColorStop(0,`rgba(79,195,247,${.12+pulse*.1})`); gl.addColorStop(1,'rgba(79,195,247,0)');
+  ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,0,r*1.9,0,Math.PI*2); ctx.fill();
+  const hue=208+Math.sin(t*.003)*7;
+  const bg=ctx.createLinearGradient(-r,-r,r,r);
+  bg.addColorStop(0,`hsl(${hue},70%,44%)`); bg.addColorStop(1,`hsl(${hue},70%,26%)`);
+  ctx.fillStyle=bg; ctx.beginPath(); ctx.roundRect(-r,-r,r*2,r*2,r*.3); ctx.fill();
+  ctx.strokeStyle='#4fc3f7'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.roundRect(-r,-r,r*2,r*2,r*.3); ctx.stroke();
+  ctx.fillStyle='rgba(79,195,247,.8)';
+  ctx.beginPath(); ctx.moveTo(0,-r-.6); ctx.lineTo(-3,-r+4); ctx.lineTo(3,-r+4); ctx.closePath(); ctx.fill();
+  ctx.font=`${Math.floor(r*1.1)}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(FACES[ROB.face]||'🤖',0,0);
+  ctx.restore();
+
+  // update dir hint in UI
+  updateDirHint();
+}
+
+function updateDirHint(){
+  const el=document.getElementById('dir-label');
+  if(el) el.textContent=DIR_ARROWS[ROB.dir]+' '+DIR_NAMES[ROB.dir];
+  // update center icon face
+  const cx=document.getElementById('dp-robot');
+  if(cx) cx.textContent=FACES[ROB.face]||'🤖';
+}
+
+/* ═══════════════════════════════
+   PROGRAM MANAGEMENT
+═══════════════════════════════ */
+function addCmd(k){
+  if(GS.running||!CMDS[k])return;
+  GS.prog.push(k); updateSeqUI(); clog('ok','+ '+CMDS[k].label); SFX.turn();
+}
+function removeCmd(i){if(GS.running)return; GS.prog.splice(i,1); updateSeqUI();}
+function clearProg(){if(GS.running)return; GS.prog=[]; updateSeqUI(); clog('warn','🗑️ Borrado.');}
+
+function updateSeqUI(){
+  const list=document.getElementById('seq-list');
+  list.innerHTML='';
+  if(!GS.prog.length){list.innerHTML='<div class="s-empty">← Agrega comandos<br>para programar al héroe</div>'; document.getElementById('seq-cnt').textContent='0 pasos'; return;}
+  GS.prog.forEach((k,i)=>{
+    const c=CMDS[k],d=document.createElement('div');
+    d.className='s-item'; d.id='si'+i;
+    d.innerHTML=`<span class="s-n">${i+1}</span><span class="s-ico">${c.icon}</span><span class="s-nm">${c.label}</span><span class="s-del" onclick="event.stopPropagation();removeCmd(${i})">✕</span>`;
+    list.appendChild(d);
+  });
+  const n=GS.prog.length;
+  document.getElementById('seq-cnt').textContent=n+' paso'+(n!==1?'s':'');
+}
+
+/* ═══════════════════════════════
+   LOAD LEVEL
+═══════════════════════════════ */
+function loadLevel(i){
+  GS.cur=i; const lv=LEVELS[i];
+  GS.prog=[]; GS.collected=0;
+  ROB.gx=1; ROB.gy=lv.heroY; ROB.startY=lv.heroY;
+  ROB.outside=true; ROB.dir=0; ROB.face='normal'; ROB.scale=1; ROB.trail=[];
+  buildExtraBtns(lv);
+  updateSeqUI(); buildLevelStrip(); updateScoreDisp();
+  document.getElementById('m-ico').textContent=lv.icon;
+  document.getElementById('m-txt').textContent=lv.mission;
+  document.getElementById('hint-txt').textContent=lv.hint;
+  clearCon(); clog('info',`📂 Nivel ${i+1}: ${lv.name}`);
+  if(i>0)setTimeout(()=>narrate(lv.nar||lv.mission),400);
+}
+
+function buildExtraBtns(lv){
+  const ex=lv.extra||[];
+  document.getElementById('eb-jump').classList.toggle('hide',!ex.includes('jump'));
+  document.getElementById('eb-rep3').classList.toggle('hide',!ex.includes('rep3'));
+  document.getElementById('eb-rep5').classList.toggle('hide',!ex.includes('rep5'));
+  const hasSpec=ex.some(k=>['jump','rep3','rep5'].includes(k));
+  document.getElementById('spec').style.display=hasSpec?'':'none';
+}
+
+/* ═══════════════════════════════
+   EXECUTION ENGINE
+   Each command moves the robot in
+   an absolute board direction.
+   Robot faces that direction first.
+═══════════════════════════════ */
+async function runProgram(){
+  if(GS.running)return;
+  if(!GS.prog.length){clog('err','⚠️ Programa vacío.'); narrate('Tu programa está vacío. Agrega comandos primero.'); return;}
+  GS.running=true;
+  document.getElementById('btn-run').disabled=true;
+  ROB.gx=1; ROB.gy=LEVELS[GS.cur].heroY;
+  ROB.outside=false; ROB.dir=0; ROB.face='think'; ROB.trail=[]; ROB.scale=1;
+  GS.collected=0; restoreStars();
+  await sleep(180);
+  SFX.start(); narrate('¡Ejecutando programa!');
+  clog('info','▶ Ejecutando...');
+  const spd=parseInt(document.getElementById('spd').value);
+  const delay=[600,420,280,180,90][spd-1];
+  const exp=expandLoops(GS.prog);
+  const bar=document.getElementById('pb-fill');
+  let won=false;
+
+  for(let i=0;i<exp.length;i++){
+    const k=exp[i];
+    hlStep(i,'act');
+    bar.style.width=((i+1)/exp.length*100)+'%';
+    await sleep(delay);
+    const res=execStep(k);
+    if(res==='goal'){
+      const lv=LEVELS[GS.cur];
+      if(lv.needAll&&GS.collected<lv.nStars){
+        const n=lv.nStars-GS.collected;
+        clog('err',`❌ Faltan ${n} estrella${n>1?'s':''}.`);
+        narrate(`Me faltan ${n} estrella${n>1?'s':''} para completar la misión.`);
+        hlStep(i,'fail'); ROB.face='sad'; SFX.fail(); break;
+      }
+      won=true; hlStep(i,'ok'); break;
+    } else if(res==='wall'||res==='out'){
+      clog('err',`❌ Choque en paso ${i+1}: ${CMDS[k]?.label||k}`);
+      narrate(`Choqué con un obstáculo en el paso ${i+1}. Revisa tu programa.`);
+      hlStep(i,'fail'); ROB.face='sad'; ROB.scale=1.3; setTimeout(()=>ROB.scale=1,320); SFX.wall(); break;
+    } else {
+      hlStep(i,'ok'); clog('ok',`  ✓ ${CMDS[k]?.label||k}`);
+    }
+  }
+
+  bar.style.width='0%'; GS.running=false;
+  document.getElementById('btn-run').disabled=false;
+
+  if(won){
+    const s=calcStars(exp.length);
+    GS.best[GS.cur]=Math.max(GS.best[GS.cur],s);
+    if(GS.cur+1<LEVELS.length)GS.unlocked=Math.max(GS.unlocked,GS.cur+2);
+    buildLevelStrip(); updateScoreDisp();
+    clog('ok',`🏆 ¡Completado! ${s}⭐`);
+    ROB.face='star'; SFX.dance();
+    const lv=LEVELS[GS.cur];
+    const ba=document.getElementById('board').getBoundingClientRect();
+    const sw=SW(),offL=parseInt(CANVAS.style.left)||0,offT=parseInt(CANVAS.style.top)||0;
+    burst(ba.left+offL+sw+lv.goalX*CS+CS/2,ba.top+offT+lv.goalY*CS+CS/2,'#00e676',28);
+    burst(ba.left+offL+sw+lv.goalX*CS+CS/2,ba.top+offT+lv.goalY*CS+CS/2,'#ffd740',18);
+    await sleep(500); showWin(s);
+  }
+}
+
+function expandLoops(prog){
+  const out=[];
+  for(let i=0;i<prog.length;i++){
+    const k=prog[i];
+    if(k==='rep3'||k==='rep5'){
+      const t=k==='rep3'?3:5;
+      if(i+1<prog.length){for(let r=0;r<t;r++)out.push(prog[i+1]); i++;}
+    } else out.push(k);
+  }
+  return out;
+}
+
+function cellAt(lv,x,y){if(x<0||x>=GW||y<0||y>=GH)return -1; return lv.grid[y][x];}
+
+function execStep(k){
+  const lv=LEVELS[GS.cur];
+  // Determine movement from absolute direction command
+  let dx=0, dy=0, newDir=ROB.dir, steps=1;
+
+  if(k==='north')    { dy=-1; newDir=3; }
+  else if(k==='south'){ dy= 1; newDir=1; }
+  else if(k==='west') { dx=-1; newDir=2; }
+  else if(k==='east') { dx= 1; newDir=0; }
+  else if(k==='jump-n'){ dy=-1; newDir=3; steps=2; }
+  else if(k==='jump-s'){ dy= 1; newDir=1; steps=2; }
+  else if(k==='jump-w'){ dx=-1; newDir=2; steps=2; }
+  else if(k==='jump-e'){ dx= 1; newDir=0; steps=2; }
+  else return 'ok';
+
+  // Face the direction (visual turn)
+  ROB.dir=newDir;
+  if(ROB.dir!==newDir) SFX.turn();
+
+  // Move steps cells
+  ROB.trail.push({x:ROB.gx,y:ROB.gy});
+  if(ROB.trail.length>28)ROB.trail.shift();
+
+  const nx=ROB.gx+dx*steps, ny=ROB.gy+dy*steps;
+
+  // For jumps, check intermediate cell
+  if(steps===2){
+    const mx=ROB.gx+dx, my=ROB.gy+dy;
+    const mv=cellAt(lv,mx,my);
+    if(mv===-1)return'out';
+    // can jump over W but not land on W
+  }
+
+  const v=cellAt(lv,nx,ny);
+  if(v===-1)return'out'; if(v===W)return'wall';
+
+  ROB.gx=nx; ROB.gy=ny;
+  ROB.scale=steps===2?1.3:1.1; setTimeout(()=>ROB.scale=1,steps===2?230:160);
+  steps===2 ? SFX.jump() : SFX.move();
+
+  if(v===ST)doCollect(nx,ny,lv);
+  if(v===GOAL)return'goal';
+  return'ok';
+}
+
+function doCollect(x,y,lv){
+  if(lv.grid[y][x]===ST){
+    lv.grid[y][x]=F; GS.collected++;
+    SFX.star(); ROB.face='happy'; setTimeout(()=>ROB.face='think',500);
+    const ba=document.getElementById('board').getBoundingClientRect();
+    const sw=SW(),offL=parseInt(CANVAS.style.left)||0,offT=parseInt(CANVAS.style.top)||0;
+    burst(ba.left+offL+sw+x*CS+CS/2,ba.top+offT+y*CS+CS/2,'#ffd740',14);
+    clog('warn',`⭐ Estrella ${GS.collected}!`);
+  }
+}
+
+function restoreStars(){const gen=genLevel(GS.cur); Object.assign(LEVELS[GS.cur],gen);}
+
+function hlStep(rawIdx,cls){
+  document.querySelectorAll('.s-item').forEach(e=>e.classList.remove('act','ok','fail'));
+  const el=document.getElementById('si'+Math.min(rawIdx,GS.prog.length-1));
+  if(el){el.classList.add(cls); el.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+function calcStars(s){const lv=CFG[GS.cur].stars; return s<=lv[0]?3:s<=lv[1]?2:1;}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function resetLevel(){
+  if(GS.running)return;
+  restoreStars();
+  ROB.gx=1; ROB.gy=LEVELS[GS.cur].heroY; ROB.outside=true;
+  ROB.dir=0; ROB.face='normal'; ROB.scale=1; ROB.trail=[];
+  GS.collected=0; clog('info','↩ Reiniciado.');
+}
+
+/* ═══════════════════════════════
+   LEVEL STRIP & SCORE
+═══════════════════════════════ */
+function buildLevelStrip(){
+  const el=document.getElementById('lvl-strip'); el.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const d=document.createElement('div'); d.className='ld';
+    if(i===GS.cur)d.classList.add('act');
+    else if(GS.best[i]>0)d.classList.add('done');
+    else if(i>=GS.unlocked)d.classList.add('lock');
+    const s=GS.best[i];
+    d.innerHTML=`${i+1}<span class="ls">${s>0?'⭐'.repeat(s)+'☆'.repeat(3-s):'☆☆☆'}</span>`;
+    if(i<GS.unlocked)d.onclick=()=>{clearProg(); loadLevel(i);};
+    el.appendChild(d);
+  });
+}
+function updateScoreDisp(){const s=GS.best[GS.cur]; document.getElementById('score').textContent=s>0?'⭐'.repeat(s)+'☆'.repeat(3-s):'☆☆☆';}
+
+/* ═══════════════════════════════
+   CONSOLE
+═══════════════════════════════ */
+function clog(t,m){const el=document.getElementById('con');const d=document.createElement('div');d.className='cl-'+t;d.textContent='> '+m;el.appendChild(d);el.scrollTop=el.scrollHeight;if(el.children.length>40)el.removeChild(el.firstChild);}
+function clearCon(){document.getElementById('con').innerHTML='';}
+
+/* ═══════════════════════════════
+   WIN MODAL
+═══════════════════════════════ */
+const WIN_MSG=["Completaste el nivel. ¡Practica para ganar más estrellas!","¡Buen trabajo! Tu programa fue muy eficiente.","¡PERFECTO! Solución óptima. ¡Eres un verdadero programador!"];
+function showWin(s){
+  SFX.win(); narrate(WIN_MSG[s-1]);
+  document.getElementById('m-e').textContent=["😊","🎉","🏆"][s-1];
+  document.getElementById('m-t').textContent=["¡Nivel Completado!","¡Excelente!","¡PERFECTO!"][s-1];
+  document.getElementById('m-t').className='m-t win';
+  document.getElementById('m-msg').textContent=WIN_MSG[s-1];
+  document.getElementById('m-st').textContent='⭐'.repeat(s)+'☆'.repeat(3-s);
+  const nb=document.getElementById('m-next');
+  if(GS.cur+1>=LEVELS.length){nb.textContent='🏁 ¡Terminado!'; nb.onclick=closeModal;}
+  else{nb.textContent='Siguiente nivel →'; nb.onclick=nextLevel;}
+  document.getElementById('ov').classList.add('show');
+}
+function closeModal(){document.getElementById('ov').classList.remove('show');}
+function nextLevel(){closeModal(); if(GS.cur+1<LEVELS.length){clearProg(); loadLevel(GS.cur+1);}}
+
+/* ═══════════════════════════════
+   KEYBOARD  — absolute directions
+═══════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  if(GS.running)return;
+  const map={
+    ArrowUp:'north', KeyW:'north',
+    ArrowDown:'south', KeyS:'south',
+    ArrowLeft:'west', KeyA:'west',
+    ArrowRight:'east', KeyD:'east',
+  };
+  if(map[e.code]){e.preventDefault(); addCmd(map[e.code]);}
+  if(e.code==='Space'){e.preventDefault(); runProgram();}
+  if(e.code==='KeyR')resetLevel();
+  if(e.code==='Escape')clearProg();
+  if(e.code==='KeyN')speak();
+});
+
+/* ═══════════════════════════════
+   INIT
+═══════════════════════════════ */
+window.addEventListener('load',()=>{
+  sizeCanvas();
+  buildLevelStrip();
+  loadLevel(0);
+  document.getElementById('spd').oninput=function(){document.getElementById('spd-v').textContent='×'+this.value;};
+  renderAll();
+  setTimeout(speak,900);
+});
+</script>
+</body>
+</html>

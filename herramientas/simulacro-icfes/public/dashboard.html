@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Estudiante - ENS Alto Sinú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #1a6b2e; --verde-claro: #2d9e4a; --amarillo: #f5c518;
+    --azul: #0b3d6e; --azul-claro: #1565c0;
+    --blanco: #f4f7fb; --card-bg: #fff;
+    --text: #1e293b; --text-muted: #64748b;
+    --border: #e2e8f0; --sombra: 0 4px 24px rgba(11,61,110,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Barlow',sans-serif; background:var(--blanco); color:var(--text); min-height:100vh; }
+  
+  /* NAV */
+  nav {
+    background: linear-gradient(135deg, var(--azul) 0%, var(--verde) 100%);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand { display:flex; align-items:center; gap:14px; }
+  .nav-brand img { width:46px; height:46px; border-radius:50%; border:2px solid var(--amarillo); object-fit:cover; }
+  .nav-brand span { color:#fff; font-family:'Playfair Display',serif; font-size:1.05rem; line-height:1.3; }
+  .nav-right { display:flex; align-items:center; gap:20px; }
+  .nav-user { color:rgba(255,255,255,0.9); font-size:0.9rem; }
+  .nav-user strong { color:var(--amarillo); }
+  .btn-logout { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:7px 18px; border-radius:8px; cursor:pointer; font-family:'Barlow',sans-serif; font-size:0.88rem; transition:all 0.2s; text-decoration:none; }
+  .btn-logout:hover { background:rgba(255,255,255,0.25); }
+
+  /* MAIN */
+  .container { max-width:1100px; margin:0 auto; padding:36px 24px; }
+  .welcome-banner {
+    background: linear-gradient(135deg, var(--azul), #1565c0);
+    border-radius:16px; padding:28px 36px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:32px; color:#fff; overflow:hidden; position:relative;
+  }
+  .welcome-banner::after {
+    content:'📚'; position:absolute; right:36px; font-size:5rem;
+    opacity:0.15; pointer-events:none;
+  }
+  .welcome-banner h2 { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:6px; }
+  .welcome-banner p { opacity:0.85; font-size:0.95rem; }
+  .badge { display:inline-block; background:var(--amarillo); color:var(--azul); padding:4px 14px; border-radius:20px; font-weight:700; font-size:0.82rem; margin-top:8px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--azul);
+    margin-bottom:20px; padding-bottom:10px;
+    border-bottom:3px solid var(--amarillo); display:inline-block;
+  }
+  .section { margin-bottom:40px; }
+
+  /* SIMULACRO CARDS */
+  .simulacros-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .sim-card {
+    background:var(--card-bg); border-radius:16px; padding:24px;
+    border:2px solid var(--border); box-shadow:var(--sombra);
+    transition:all 0.25s; position:relative; overflow:hidden;
+  }
+  .sim-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg,var(--verde),var(--azul));
+  }
+  .sim-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(11,61,110,0.18); border-color:var(--verde-claro); }
+  .sim-card h3 { font-size:1.15rem; color:var(--azul); margin-bottom:8px; }
+  .sim-card p { color:var(--text-muted); font-size:0.9rem; margin-bottom:12px; }
+  .sim-meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .sim-meta span { font-size:0.82rem; background:var(--blanco); border:1px solid var(--border); padding:4px 10px; border-radius:20px; color:var(--text-muted); }
+  .sim-meta .time { color:var(--verde); border-color:var(--verde-claro); background:#f0fdf4; }
+  .areas-list { margin-bottom:16px; }
+  .area-chip { display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:var(--azul-claro); font-size:0.8rem; padding:3px 10px; border-radius:12px; margin:2px; font-weight:500; }
+  .btn-presentar { width:100%; padding:12px; background:linear-gradient(135deg,var(--verde),var(--azul)); color:#fff; border:none; border-radius:10px; font-family:'Barlow',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+  .btn-presentar:hover { opacity:0.92; transform:translateY(-1px); }
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .empty-state .icon { font-size:3.5rem; margin-bottom:12px; }
+
+  /* HISTORIAL */
+  .historial-table { width:100%; border-collapse:collapse; background:var(--card-bg); border-radius:12px; overflow:hidden; box-shadow:var(--sombra); }
+  .historial-table th { background:var(--azul); color:#fff; padding:12px 16px; text-align:left; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .historial-table td { padding:12px 16px; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .historial-table tr:last-child td { border-bottom:none; }
+  .historial-table tr:hover td { background:#f8fafc; }
+  .nivel-badge { padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; }
+  .nivel-Excelente { background:#d1fae5; color:#065f46; }
+  .nivel-Bueno { background:#dbeafe; color:#1e40af; }
+  .nivel-Básico { background:#fef3c7; color:#92400e; }
+  .nivel-Bajo { background:#fee2e2; color:#991b1b; }
+  .btn-detalle { background:transparent; border:1px solid var(--azul); color:var(--azul); padding:4px 12px; border-radius:8px; font-size:0.82rem; cursor:pointer; transition:all 0.2s; }
+  .btn-detalle:hover { background:var(--azul); color:#fff; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:20px; padding:32px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-family:'Playfair Display',serif; color:var(--azul); font-size:1.4rem; margin-bottom:20px; }
+  .modal-close { float:right; background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted); }
+  .area-result { background:var(--blanco); border-radius:12px; padding:16px; margin-bottom:12px; border-left:4px solid var(--verde); }
+  .area-result h4 { color:var(--azul); margin-bottom:6px; }
+  .progress-bar { height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; margin-top:6px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--verde),var(--azul-claro)); border-radius:4px; transition:width 0.8s ease; }
+  .score-global { text-align:center; background:linear-gradient(135deg,var(--azul),var(--verde)); color:#fff; border-radius:14px; padding:24px; margin-bottom:20px; }
+  .score-global .score-num { font-family:'Playfair Display',serif; font-size:3.5rem; font-weight:700; }
+  .score-global .score-label { opacity:0.85; font-size:0.95rem; }
+
+  /* Detalle pregunta×pregunta estudiante */
+  .det-preg-card{padding:13px 15px;border-radius:10px;margin-bottom:10px;border:2px solid;}
+  .det-preg-card.correcta{background:#f0fdf4;border-color:#86efac;}
+  .det-preg-card.incorrecta{background:#fff1f2;border-color:#fca5a5;}
+  .det-preg-card.sinresp{background:#f8fafc;border-color:#e2e8f0;}
+  .det-op-row{display:flex;align-items:center;gap:8px;font-size:0.88rem;margin-top:5px;}
+  .det-op-badge{width:24px;height:24px;min-width:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.78rem;color:#fff;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">
+    <img src="/logo.png" alt="Logo">
+    <span>Escuela Normal Superior<br>del Alto Sinú</span>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user">Bienvenido, <strong id="navNombre">...</strong></div>
+    <a href="/auth/logout" class="btn-logout">Cerrar Sesión</a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Welcome -->
+  <div class="welcome-banner">
+    <div>
+      <h2 id="welcomeNombre">Cargando...</h2>
+      <p>Prepárate para el ICFES con nuestros simulacros</p>
+      <div class="badge" id="welcomeGrado">Grado...</div>
+    </div>
+  </div>
+
+  <!-- Simulacros activos -->
+  <div class="section">
+    <div class="section-title">🎯 Simulacros Disponibles</div>
+    <div class="simulacros-grid" id="simulacrosGrid">
+      <div class="empty-state"><div class="icon">⏳</div><p>Cargando simulacros...</p></div>
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="section">
+    <div class="section-title">📊 Mi Historial de Resultados</div>
+    <div id="historialContainer">
+      <div class="empty-state"><div class="icon">📋</div><p>Aún no has presentado simulacros.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalle resultado -->
+<div class="modal-overlay" id="modalDetalle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalDetalle')">✕</button>
+    <h3>📊 Detalle del Resultado</h3>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- Modal P×P estudiante -->
+<div class="modal-overlay" id="modalPxP">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-close" onclick="closeModal('modalPxP')">✕</button>
+    <h3>📋 Mi Respuesta por Pregunta</h3>
+    <div id="modalPxPContent"><div style="text-align:center;padding:30px;color:#64748b">Cargando...</div></div>
+  </div>
+</div>
+
+<script>
+let userData = null;
+
+async function loadUser() {
+  const res = await fetch('/estudiante/me');
+  const data = await res.json();
+  if (!data.success) return window.location.href='/';
+  userData = data.user;
+  document.getElementById('navNombre').textContent = data.user.nombres;
+  document.getElementById('welcomeNombre').textContent = `¡Hola, ${data.user.nombres}!`;
+  document.getElementById('welcomeGrado').textContent = `Grado ${data.user.grado}`;
+}
+
+async function loadSimulacros() {
+  const res = await fetch('/estudiante/simulacros-activos');
+  const data = await res.json();
+  const grid = document.getElementById('simulacrosGrid');
+  if (!data.simulacros || data.simulacros.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">🔒</div><p>No hay simulacros activos en este momento.<br>El profesor los habilitará próximamente.</p></div>`;
+    return;
+  }
+  grid.innerHTML = data.simulacros.map(sim => `
+    <div class="sim-card">
+      <h3>${sim.nombre}</h3>
+      <p>${sim.descripcion || 'Simulacro tipo ICFES'}</p>
+      <div class="sim-meta">
+        <span class="time">⏱ ${sim.duracion} min</span>
+        <span>${sim.tipo==='html'?'🌐 HTML Completo':sim.tipo==='completo'?'✏️ Completo':'📝 Manual'}</span>
+        <span>${(sim.areas||[]).length} área${(sim.areas||[]).length!==1?'s':''}</span>
+        <span>❓ ${(sim.areas||[]).reduce((a,ar)=>a+(ar.preguntas?ar.preguntas.length:0),0)} preguntas</span>
+        <span>📅 ${new Date(sim.creadoEn).toLocaleDateString('es-CO')}</span>
+      </div>
+      <div class="areas-list">
+        ${(sim.areas||[]).map(a=>`<span class="area-chip">${a.nombre}</span>`).join('')}
+      </div>
+      <button class="btn-presentar" onclick="irSimulacro('${sim.id}','${sim.tipo||'manual'}','${sim.htmlPath||''}')">🚀 Presentar Simulacro</button>
+    </div>
+  `).join('');
+}
+
+async function loadHistorial() {
+  const res = await fetch('/estudiante/historial');
+  const data = await res.json();
+  const container = document.getElementById('historialContainer');
+  if (!data.historial || data.historial.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>Aún no has presentado simulacros.<br>¡Anímate a presentar el primero!</p></div>`;
+    return;
+  }
+  const rows = data.historial.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(r => `
+    <tr>
+      <td><strong>${r.simulacroNombre}</strong></td>
+      <td>${new Date(r.fecha).toLocaleDateString('es-CO')}</td>
+      <td><strong style="color:var(--azul);font-size:1.1rem">${r.puntajeGlobal}</strong>/100</td>
+      <td>${r.totalCorrectas}/${r.totalPreguntas}</td>
+      <td><span class="nivel-badge nivel-${r.nivel}">${r.nivel}</span></td>
+      <td>${r.tiempoUsado || 'N/D'}</td>
+      <td><button class="btn-detalle" onclick='showDetalle(${JSON.stringify(r)})'>Ver detalle</button></td>
+      <td><button class="btn-detalle" style="background:#7c3aed;color:#fff;border-color:#7c3aed;border:none" onclick="verMisPreguntasPorPregunta('${r.simulacroId}')">📋 P×P</button></td>
+    </tr>
+  `).join('');
+  container.innerHTML = `
+    <table class="historial-table">
+      <thead><tr>
+        <th>Simulacro</th><th>Fecha</th><th>Puntaje</th><th>Correctas</th><th>Nivel</th><th>Tiempo</th><th>Detalle</th><th>P×P</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function irSimulacro(id, tipo, htmlPath) {
+  if (tipo === 'html' && htmlPath) {
+    window.location.href = htmlPath;
+  } else {
+    window.location.href = `/simulacro/${id}/presentar`;
+  }
+}
+
+function showDetalle(r) {
+  const html = `
+    <div class="score-global">
+      <div class="score-num">${r.puntajeGlobal}</div>
+      <div class="score-label">Puntaje Global ICFES (0-100)</div>
+      <div style="margin-top:8px;font-size:1.1rem;font-weight:700">${r.nivel}</div>
+    </div>
+    <p style="margin-bottom:16px;color:#64748b;font-size:0.9rem">📅 ${new Date(r.fecha).toLocaleString('es-CO')} | ⏱ Tiempo: ${r.tiempoUsado||'N/D'}</p>
+    <strong style="display:block;margin-bottom:12px;color:#0b3d6e">Resultados por Área:</strong>
+    ${(r.resultadoAreas||[]).map(a=>{
+      const nColor=a.nivel==='Avanzado'?'#065f46':a.nivel==='Satisfactorio'?'#1e40af':a.nivel==='Mínimo'?'#92400e':'#991b1b';
+      const nBg=a.nivel==='Avanzado'?'#d1fae5':a.nivel==='Satisfactorio'?'#dbeafe':a.nivel==='Mínimo'?'#fef3c7':'#fee2e2';
+      const bColor=a.puntaje>=80?'#16a34a':a.puntaje>=65?'#2563eb':a.puntaje>=35?'#d97706':'#dc2626';
+      return `<div class="area-result">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:4px">
+          <h4 style="margin:0">${a.area}</h4>
+          <div style="display:flex;gap:4px">
+            ${a.peso?`<span style="font-size:0.72rem;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:10px">Peso:${a.peso}%</span>`:''}
+            ${a.nivel?`<span style="font-size:0.75rem;padding:2px 9px;border-radius:10px;font-weight:700;background:${nBg};color:${nColor}">${a.nivel}</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.86rem;color:#64748b;margin-bottom:4px"><span>✅ ${a.correctas}/${a.total} correctas</span><strong style="color:${bColor}">${a.puntaje}/100</strong></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${a.puntaje}%;background:${bColor}"></div></div>
+      </div>`;
+    }).join('')}
+  `;
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalDetalle').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id||'modalDetalle').classList.remove('open'); }
+
+async function verMisPreguntasPorPregunta(simId) {
+  if (!simId) return alert('ID de simulacro no disponible.');
+  document.getElementById('modalPxPContent').innerHTML = '<div style="text-align:center;padding:30px;color:#64748b">⏳ Cargando...</div>';
+  document.getElementById('modalPxP').classList.add('open');
+
+  // Usamos la ruta del estudiante
+  const res = await fetch(`/estudiante/resultado-detalle/${simId}`);
+  const data = await res.json();
+  if (!data.success) {
+    document.getElementById('modalPxPContent').innerHTML = '<p style="color:#dc2626;padding:20px">No se encontró el resultado. ' + (data.message||'') + '</p>';
+    return;
+  }
+  const letras = ['A','B','C','D','E','F','G','H'];
+const colores = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#c026d3','#ea580c'];
+
+  let html = `
+    <div style="background:linear-gradient(135deg,#0b3d6e,#1a6b2e);color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px">
+      <div style="font-size:1.6rem;font-weight:700;font-family:'Playfair Display',serif">${data.puntajeGlobal}/100</div>
+      <div style="opacity:0.85;font-size:0.88rem">${data.simulacroNombre} · ${new Date(data.fecha).toLocaleDateString('es-CO')}</div>
+      <div style="margin-top:6px;font-weight:700">${data.nivel}</div>
+    </div>
+    <div style="display:flex;gap:10px;font-size:0.8rem;margin-bottom:16px;flex-wrap:wrap">
+      <span style="background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:20px;font-weight:700">✅ Correcta</span>
+      <span style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-weight:700">❌ Incorrecta</span>
+      <span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-weight:700">— Sin responder</span>
+    </div>`;
+
+  (data.areas||[]).forEach(area => {
+    html += `<div style="font-weight:700;color:#0b3d6e;background:#eff6ff;padding:7px 12px;border-radius:8px;margin:12px 0 8px;border-left:4px solid #0b3d6e">📚 ${area.nombre}</div>`;
+    (area.preguntas||[]).forEach(preg => {
+      const cls = preg.sinResponder ? 'sinresp' : preg.esCorrecta ? 'correcta' : 'incorrecta';
+      const icon = preg.sinResponder ? '—' : preg.esCorrecta ? '✅' : '❌';
+      html += `<div class="det-preg-card ${cls}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <strong style="font-size:0.85rem;color:#0b3d6e">Pregunta ${preg.numero}</strong>
+          <span style="font-size:1.1rem">${icon}</span>
+        </div>
+        <div style="font-size:0.84rem;color:#334155;margin-bottom:8px;border-left:3px solid #cbd5e1;padding-left:8px;line-height:1.5">${(preg.texto||'').length>100?(preg.texto||'').slice(0,100)+'…':(preg.texto||'')}</div>
+        <div class="det-op-row">
+          <span style="font-size:0.78rem;color:#64748b;min-width:110px">Tu respuesta:</span>
+          ${preg.sinResponder
+            ? '<span style="color:#94a3b8;font-size:0.85rem">No respondiste</span>'
+            : `<div class="det-op-badge" style="background:${preg.esCorrecta?'#16a34a':'#dc2626'}">${preg.letraMarcada}</div>
+               <span style="font-size:0.85rem;margin-left:4px">${(preg.opciones||[])[preg.respuestaMarcada]||''}</span>`}
+        </div>
+        <div class="det-op-row" style="margin-top:4px">
+          <span style="font-size:0.78rem;color:#64748b;min-width:110px">Respuesta correcta:</span>
+          <div class="det-op-badge" style="background:#16a34a">${preg.letraCorrecta}</div>
+          <span style="font-size:0.85rem;margin-left:4px">${(preg.opciones||[])[preg.respuestaCorrecta]||''}</span>
+        </div>
+      </div>`;
+    });
+  });
+
+  document.getElementById('modalPxPContent').innerHTML = html;
+}
+
+(async () => {
+  await loadUser();
+  await loadSimulacros();
+  await loadHistorial();
+})();
+</script>
+</body>
+</html>

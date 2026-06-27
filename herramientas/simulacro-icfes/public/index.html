@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacros ICFES · ENS Alto Sinú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#1a6b2e;--verde-c:#2d9e4a;--amarillo:#f5c518;--azul:#0b3d6e;--azul-c:#1565c0;--rojo:#dc2626;--blanco:#f8fafc;--borde:#e2e8f0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Barlow',sans-serif;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+  .left-panel{background:linear-gradient(160deg,var(--azul) 0%,#0d3060 40%,var(--verde) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px;position:relative;overflow:hidden;}
+  .deco{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.07);}
+  .deco1{width:420px;height:420px;top:-100px;right:-100px;}
+  .deco2{width:260px;height:260px;bottom:-60px;left:-70px;}
+  .left-content{position:relative;z-index:1;text-align:center;max-width:360px;}
+  .logo-wrap{width:110px;height:110px;margin:0 auto 24px;border-radius:50%;border:4px solid var(--amarillo);box-shadow:0 0 40px rgba(245,197,24,0.35),0 0 0 8px rgba(245,197,24,0.1);overflow:hidden;background:#fff;}
+  .logo-wrap img{width:100%;height:100%;object-fit:cover;}
+  .left-content h1{font-family:'Playfair Display',serif;color:#fff;font-size:1.55rem;line-height:1.35;text-shadow:0 2px 12px rgba(0,0,0,0.3);margin-bottom:10px;}
+  .tag{display:inline-block;background:var(--amarillo);color:var(--azul);padding:5px 18px;border-radius:20px;font-weight:700;font-size:0.82rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;}
+  .features{display:flex;flex-direction:column;gap:12px;}
+  .feature{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.1);border-radius:12px;padding:14px 18px;border:1px solid rgba(255,255,255,0.12);text-align:left;}
+  .fi{font-size:1.6rem;flex-shrink:0;}
+  .ft{color:rgba(255,255,255,0.9);font-size:0.87rem;line-height:1.4;}
+  .ft strong{color:#fff;display:block;font-size:0.92rem;}
+  .left-footer{margin-top:28px;color:rgba(255,255,255,0.4);font-size:0.78rem;}
+  .right-panel{background:var(--blanco);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 40px;overflow-y:auto;}
+  .form-container{width:100%;max-width:420px;}
+  .tabs{display:flex;gap:4px;background:#e9eef5;padding:5px;border-radius:14px;margin-bottom:28px;}
+  .tab{flex:1;padding:11px;border:none;background:transparent;border-radius:10px;font-family:'Barlow',sans-serif;font-weight:600;font-size:0.95rem;cursor:pointer;color:#64748b;transition:all 0.22s;}
+  .tab.active{background:#fff;color:var(--azul);box-shadow:0 2px 10px rgba(11,61,110,0.12);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .form-title{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.5rem;margin-bottom:4px;}
+  .form-subtitle{color:#94a3b8;font-size:0.9rem;margin-bottom:22px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-weight:600;color:var(--azul);margin-bottom:6px;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.6px;}
+  .input-wrap{position:relative;}
+  .input-wrap .icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;color:#94a3b8;}
+  .input-wrap input,.input-wrap select{width:100%;padding:12px 14px 12px 40px;border:2px solid var(--borde);border-radius:11px;font-family:'Barlow',sans-serif;font-size:0.97rem;color:#1e293b;background:#fff;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;}
+  .input-wrap input:focus,.input-wrap select:focus{border-color:var(--azul-c);box-shadow:0 0 0 3px rgba(21,101,192,0.12);}
+  .input-wrap input.valid{border-color:var(--verde-c);}
+  .input-wrap input.invalid{border-color:var(--rojo);}
+  .check-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:0.9rem;display:none;}
+  .input-wrap input.valid~.check-icon{display:block;color:var(--verde-c);}
+  .input-wrap input.invalid~.check-icon{display:block;color:var(--rojo);}
+  .pass-strength{margin-top:6px;}
+  .strength-bar{height:4px;background:var(--borde);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+  .strength-fill{height:100%;border-radius:2px;transition:all 0.3s;width:0;}
+  .strength-text{font-size:0.78rem;color:#94a3b8;}
+  .grado-group{display:flex;gap:8px;}
+  .grado-btn{flex:1;padding:12px 8px;border:2px solid var(--borde);border-radius:10px;background:#fff;font-family:'Barlow',sans-serif;font-weight:700;font-size:0.9rem;color:#64748b;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .grado-btn:hover{border-color:var(--azul-c);color:var(--azul);}
+  .grado-btn.selected{background:var(--azul);color:#fff;border-color:var(--azul);box-shadow:0 3px 10px rgba(11,61,110,0.25);}
+  .btn-submit{width:100%;padding:14px;border:none;border-radius:12px;font-family:'Barlow',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:4px;background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;box-shadow:0 4px 18px rgba(11,61,110,0.3);letter-spacing:0.3px;}
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(11,61,110,0.4);}
+  .btn-submit:active{transform:translateY(0);}
+  .btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+  .alert{padding:12px 16px;border-radius:10px;font-size:0.9rem;font-weight:500;margin-top:14px;display:none;animation:slideIn 0.2s ease;}
+  .alert.success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
+  .alert.error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+  .steps{display:flex;align-items:center;gap:0;margin-bottom:22px;}
+  .step{display:flex;align-items:center;gap:6px;font-size:0.82rem;color:#94a3b8;font-weight:600;}
+  .step-num{width:26px;height:26px;border-radius:50%;background:var(--borde);color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;transition:all 0.3s;}
+  .step.active .step-num{background:var(--azul);color:#fff;}
+  .step.done .step-num{background:var(--verde-c);color:#fff;}
+  .step.active{color:var(--azul);}
+  .step.done{color:var(--verde-c);}
+  .step-line{flex:1;height:2px;background:var(--borde);margin:0 8px;transition:background 0.3s;}
+  .step-line.done{background:var(--verde-c);}
+  .step-panel{display:none;}
+  .step-panel.active{display:block;animation:fadeUp 0.25s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .divider{text-align:center;color:#94a3b8;font-size:0.82rem;margin:18px 0;position:relative;}
+  .divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--borde);}
+  .divider::before{left:0;}.divider::after{right:0;}
+  .hint{font-size:0.82rem;color:#94a3b8;margin-top:5px;}
+  .link-btn{background:none;border:none;color:var(--azul-c);font-size:0.9rem;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;text-decoration:underline;}
+  .resumen-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px;margin:16px 0;display:none;}
+  .resumen-box .rb-title{font-weight:700;color:#0369a1;margin-bottom:10px;font-size:0.9rem;}
+  .resumen-box .rb-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.88rem;color:#0c4a6e;}
+  @media(max-width:768px){body{grid-template-columns:1fr;}.left-panel{display:none;}.right-panel{padding:32px 24px;}}
+</style>
+</head>
+<body>
+
+<div class="left-panel">
+  <div class="deco deco1"></div>
+  <div class="deco deco2"></div>
+  <div class="left-content">
+    <div class="logo-wrap"><img src="/logo.png" alt="Logo ENS Alto Sinú"></div>
+    <h1>Escuela Normal Superior<br>del Alto Sinú</h1>
+    <div class="tag">Plataforma ICFES</div>
+    <div class="features">
+      <div class="feature"><div class="fi">📋</div><div class="ft"><strong>Simulacros completos</strong>Pruebas tipo ICFES con todas las áreas</div></div>
+      <div class="feature"><div class="fi">⏱</div><div class="ft"><strong>Timer regresivo</strong>Controla tu tiempo como en la prueba real</div></div>
+      <div class="feature"><div class="fi">📊</div><div class="ft"><strong>Historial de progreso</strong>Sigue tu avance y resultados por área</div></div>
+      <div class="feature"><div class="fi">🏆</div><div class="ft"><strong>Puntaje tipo ICFES</strong>Resultados en escala 0–100 con nivel de desempeño</div></div>
+    </div>
+    <div class="left-footer">Creado por Porfe Carlos Durán · 2026</div>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="form-container">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('login')">🔑 Ingresar</button>
+      <button class="tab" onclick="showTab('register')">✏️ Registrarse</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="tab-content active" id="tabLogin">
+      <div class="form-title">Bienvenido de nuevo</div>
+      <div class="form-subtitle">Ingresa con tu documento y contraseña</div>
+      <div class="field"><label>Número de Documento</label>
+        <div class="input-wrap"><span class="icon">🪪</span><input type="text" id="loginDoc" placeholder="Tu número de documento" inputmode="numeric"><span class="check-icon">✓</span></div>
+      </div>
+      <div class="field"><label>Contraseña</label>
+        <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="loginPass" placeholder="Tu contraseña"><span class="check-icon">✓</span></div>
+      </div>
+      <button class="btn-submit" onclick="doLogin()" id="btnLogin">Ingresar a la Plataforma →</button>
+      <div class="alert" id="loginAlert"></div>
+      <div class="divider">¿Eres nuevo?</div>
+      <div style="text-align:center"><button class="link-btn" onclick="showTab('register')">Crear cuenta de estudiante</button></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="tab-content" id="tabRegister">
+      <div class="form-title">Crear cuenta</div>
+      <div class="form-subtitle">Regístrate para acceder a los simulacros</div>
+      <div class="steps">
+        <div class="step active" id="s1"><div class="step-num">1</div><span>Datos</span></div>
+        <div class="step-line" id="l12"></div>
+        <div class="step" id="s2"><div class="step-num">2</div><span>Acceso</span></div>
+        <div class="step-line" id="l23"></div>
+        <div class="step" id="s3"><div class="step-num">3</div><span>Grado</span></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="step-panel active" id="sp1">
+        <div class="row2">
+          <div class="field"><label>Nombres *</label><div class="input-wrap"><span class="icon">👤</span><input type="text" id="rNombres" placeholder="Ej: Laura" oninput="vf(this,'name')"><span class="check-icon">✓</span></div></div>
+          <div class="field"><label>Apellidos *</label><div class="input-wrap"><span class="icon">👤</span><input type="text" id="rApellidos" placeholder="Ej: García" oninput="vf(this,'name')"><span class="check-icon">✓</span></div></div>
+        </div>
+        <div class="field"><label>Número de Documento *</label>
+          <div class="input-wrap"><span class="icon">🪪</span><input type="text" id="rDoc" placeholder="Ej: 1005234567" inputmode="numeric" oninput="vf(this,'doc')"><span class="check-icon">✓</span></div>
+          <div class="hint">Este número será tu usuario para ingresar</div>
+        </div>
+        <button class="btn-submit" onclick="goStep(2)">Continuar →</button>
+        <div class="alert" id="a1"></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-panel" id="sp2">
+        <div class="field"><label>Crear Contraseña *</label>
+          <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="rPass" placeholder="Mínimo 6 caracteres" oninput="checkStr(this.value)"><span class="check-icon">✓</span></div>
+          <div class="pass-strength"><div class="strength-bar"><div class="strength-fill" id="strFill"></div></div><div class="strength-text" id="strTxt">Escribe una contraseña</div></div>
+        </div>
+        <div class="field"><label>Confirmar Contraseña *</label>
+          <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="rPass2" placeholder="Repite tu contraseña" oninput="checkMatch()"><span class="check-icon">✓</span></div>
+          <div class="hint" id="matchHint"></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-submit" style="background:#e2e8f0;color:#475569;box-shadow:none;flex:0 0 auto;width:auto;padding:14px 20px" onclick="goStep(1)">← Volver</button>
+          <button class="btn-submit" style="flex:1" onclick="goStep(3)">Continuar →</button>
+        </div>
+        <div class="alert" id="a2"></div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-panel" id="sp3">
+        <div class="field"><label>Selecciona tu Grado *</label>
+          <div class="grado-group">
+            <button type="button" class="grado-btn" onclick="selGrado('11-01',this)">11-01</button>
+            <button type="button" class="grado-btn" onclick="selGrado('11-02',this)">11-02</button>
+            <button type="button" class="grado-btn" onclick="selGrado('11-03',this)">11-03</button>
+          </div>
+          <div class="hint" id="gradoHint" style="margin-top:8px"></div>
+        </div>
+        <div class="resumen-box" id="resumenBox">
+          <div class="rb-title">📋 Resumen de tu registro:</div>
+          <div class="rb-grid">
+            <div>👤 <strong id="rbNombre">—</strong></div>
+            <div>🪪 <strong id="rbDoc">—</strong></div>
+            <div>🎓 <strong id="rbGrado">—</strong></div>
+            <div>🔒 Contraseña ✅</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-submit" style="background:#e2e8f0;color:#475569;box-shadow:none;flex:0 0 auto;width:auto;padding:14px 20px" onclick="goStep(2)">← Volver</button>
+          <button class="btn-submit" style="flex:1;background:linear-gradient(135deg,var(--verde),#1565c0)" onclick="doRegister()" id="btnReg">✅ Crear mi cuenta</button>
+        </div>
+        <div class="alert" id="a3"></div>
+      </div>
+
+      <div class="divider">¿Ya tienes cuenta?</div>
+      <div style="text-align:center"><button class="link-btn" onclick="showTab('login')">Iniciar sesión</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let curStep=1, gradoSel='';
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  document.getElementById('tabLogin').classList.toggle('active',t==='login');
+  document.getElementById('tabRegister').classList.toggle('active',t==='register');
+  if(t==='register') goStep(1,true);
+}
+
+function goStep(n,force){
+  if(!force && n>curStep){
+    if(curStep===1&&!vs1()) return;
+    if(curStep===2&&!vs2()) return;
+    if(curStep===3&&!vs3()) return;
+  }
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sp'+n).classList.add('active');
+  for(let i=1;i<=3;i++){
+    const el=document.getElementById('s'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  }
+  document.getElementById('l12').classList.toggle('done',n>1);
+  document.getElementById('l23').classList.toggle('done',n>2);
+  if(n===3) updRes();
+  curStep=n;
+}
+
+function selGrado(g,btn){
+  gradoSel=g;
+  document.querySelectorAll('.grado-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('gradoHint').textContent='✅ Grado '+g+' seleccionado';
+  document.getElementById('gradoHint').style.color='#16a34a';
+  updRes();
+}
+
+function updRes(){
+  document.getElementById('rbNombre').textContent=(document.getElementById('rNombres').value+' '+document.getElementById('rApellidos').value).trim();
+  document.getElementById('rbDoc').textContent=document.getElementById('rDoc').value;
+  document.getElementById('rbGrado').textContent=gradoSel||'Sin seleccionar';
+  document.getElementById('resumenBox').style.display=gradoSel?'block':'none';
+}
+
+function vf(el,t){
+  const v=el.value.trim();
+  const ok=t==='name'?v.length>=2:/^\d{6,12}$/.test(v);
+  el.classList.toggle('valid',ok&&v.length>0);
+  el.classList.toggle('invalid',!ok&&v.length>0);
+  return ok;
+}
+
+function vs1(){
+  const n=document.getElementById('rNombres').value.trim();
+  const a=document.getElementById('rApellidos').value.trim();
+  const d=document.getElementById('rDoc').value.trim();
+  if(n.length<2) return showA('a1','Ingresa tu nombre (mínimo 2 caracteres)','error'),false;
+  if(a.length<2) return showA('a1','Ingresa tus apellidos (mínimo 2 caracteres)','error'),false;
+  if(!/^\d{6,12}$/.test(d)) return showA('a1','El documento debe tener entre 6 y 12 dígitos','error'),false;
+  return true;
+}
+function vs2(){
+  const p=document.getElementById('rPass').value;
+  const p2=document.getElementById('rPass2').value;
+  if(p.length<6) return showA('a2','La contraseña debe tener al menos 6 caracteres','error'),false;
+  if(p!==p2) return showA('a2','Las contraseñas no coinciden','error'),false;
+  return true;
+}
+function vs3(){if(!gradoSel) return showA('a3','Selecciona tu grado','error'),false;return true;}
+
+function checkStr(v){
+  const f=document.getElementById('strFill'),t=document.getElementById('strTxt');
+  let sc=0;
+  if(v.length>=6)sc++;if(v.length>=10)sc++;if(/[A-Z]/.test(v))sc++;if(/\d/.test(v))sc++;if(/[^A-Za-z0-9]/.test(v))sc++;
+  const ls=[{w:'0%',c:'#e2e8f0',t:'Escribe una contraseña'},{w:'25%',c:'#ef4444',t:'Muy débil'},{w:'45%',c:'#f97316',t:'Débil'},{w:'65%',c:'#eab308',t:'Regular'},{w:'85%',c:'#22c55e',t:'Buena'},{w:'100%',c:'#16a34a',t:'Muy segura ✓'}];
+  const l=ls[Math.min(sc,5)];
+  f.style.width=v?l.w:'0';f.style.background=l.c;t.textContent=v?l.t:'Escribe una contraseña';t.style.color=l.c;
+  const el=document.getElementById('rPass');el.classList.toggle('valid',sc>=2&&v.length>=6);el.classList.toggle('invalid',v.length>0&&v.length<6);
+}
+function checkMatch(){
+  const p=document.getElementById('rPass').value,p2=document.getElementById('rPass2').value,h=document.getElementById('matchHint'),el=document.getElementById('rPass2');
+  if(!p2){h.textContent='';el.classList.remove('valid','invalid');return;}
+  el.classList.toggle('valid',p===p2);el.classList.toggle('invalid',p!==p2);
+  h.textContent=p===p2?'✅ Las contraseñas coinciden':'❌ No coinciden';h.style.color=p===p2?'#16a34a':'#ef4444';
+}
+
+async function doLogin(){
+  const doc=document.getElementById('loginDoc').value.trim(),pass=document.getElementById('loginPass').value;
+  if(!doc||!pass) return showA('loginAlert','Completa todos los campos','error');
+  const btn=document.getElementById('btnLogin');btn.disabled=true;btn.textContent='⏳ Verificando...';
+  try{
+    const r=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documento:doc,password:pass})});
+    const d=await r.json();
+    if(d.success){btn.textContent='✅ Ingresando...';window.location.href=d.role==='admin'?'/admin/dashboard':'/estudiante/dashboard';}
+    else{showA('loginAlert',d.message,'error');btn.disabled=false;btn.textContent='Ingresar a la Plataforma →';}
+  }catch(e){showA('loginAlert','Error de conexión','error');btn.disabled=false;btn.textContent='Ingresar a la Plataforma →';}
+}
+
+async function doRegister(){
+  if(!vs3()) return;
+  const nombres=document.getElementById('rNombres').value.trim(),apellidos=document.getElementById('rApellidos').value.trim();
+  const documento=document.getElementById('rDoc').value.trim(),password=document.getElementById('rPass').value,grado=gradoSel;
+  const btn=document.getElementById('btnReg');btn.disabled=true;btn.textContent='⏳ Creando cuenta...';
+  try{
+    const r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombres,apellidos,documento,password,grado})});
+    const d=await r.json();
+    if(d.success){
+      showA('a3','🎉 ¡Cuenta creada! Iniciando sesión...','success');btn.textContent='✅ ¡Listo!';
+      const lr=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documento,password})});
+      const ld=await lr.json();
+      setTimeout(()=>window.location.href=ld.success?'/estudiante/dashboard':'/',1200);
+    }else{showA('a3',d.message,'error');btn.disabled=false;btn.textContent='✅ Crear mi cuenta';}
+  }catch(e){showA('a3','Error de conexión','error');btn.disabled=false;btn.textContent='✅ Crear mi cuenta';}
+}
+
+function showA(id,msg,t){const e=document.getElementById(id);e.textContent=msg;e.className='alert '+t;e.style.display='block';setTimeout(()=>e.style.display='none',5000);}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('tabLogin').classList.contains('active')) doLogin();
+    else if(curStep===1) goStep(2);
+    else if(curStep===2) goStep(3);
+    else if(curStep===3) doRegister();
+  }
+});
+document.getElementById('loginDoc').addEventListener('input',function(){this.classList.toggle('valid',this.value.trim().length>4);});
+document.getElementById('loginPass').addEventListener('input',function(){this.classList.toggle('valid',this.value.length>=4);});
+</script>
+</body>
+</html>

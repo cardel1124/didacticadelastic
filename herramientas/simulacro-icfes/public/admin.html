@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador - ENS Alto Sinú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#1a6b2e;--verde-claro:#2d9e4a;--amarillo:#f5c518;--azul:#0b3d6e;--azul-claro:#1565c0;--rojo:#dc2626;--blanco:#f4f7fb;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Barlow',sans-serif;background:var(--blanco);color:var(--text);display:flex;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{width:240px;background:linear-gradient(180deg,var(--azul) 0%,#0d2d52 100%);min-height:100vh;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;}
+  .sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;}
+  .sidebar-logo img{width:44px;height:44px;border-radius:50%;border:2px solid var(--amarillo);object-fit:cover;}
+  .sidebar-logo span{color:#fff;font-size:0.85rem;line-height:1.4;font-weight:500;}
+  .sidebar-logo .admin-tag{color:var(--amarillo);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+  nav{flex:1;padding:16px 0;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;font-size:0.93rem;font-weight:500;}
+  .nav-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+  .nav-item.active{background:rgba(255,255,255,0.12);color:#fff;border-left-color:var(--amarillo);}
+  .nav-item .icon{font-size:1.1rem;width:22px;text-align:center;}
+  .sidebar-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.1);}
+  .btn-logout{display:block;text-align:center;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);padding:9px;border-radius:8px;text-decoration:none;font-size:0.88rem;transition:all 0.2s;}
+  .btn-logout:hover{background:rgba(255,255,255,0.2);}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .topbar h1{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.4rem;}
+  .topbar-right{color:var(--muted);font-size:0.88rem;}
+
+  .content{flex:1;padding:32px;overflow-y:auto;}
+  
+  /* PAGES */
+  .page{display:none;}
+  .page.active{display:block;}
+  
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:32px;}
+  .stat-card{background:var(--card);border-radius:14px;padding:22px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+  .stat-card .stat-num{font-size:2.2rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--azul);}
+  .stat-card .stat-label{color:var(--muted);font-size:0.88rem;margin-top:4px;}
+  .stat-card .stat-icon{font-size:1.8rem;margin-bottom:8px;}
+
+  /* SECTION TITLE */
+  .section-title{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.25rem;margin-bottom:16px;padding-bottom:8px;border-bottom:3px solid var(--amarillo);display:inline-block;}
+
+  /* FORM */
+  .form-card{background:var(--card);border-radius:16px;padding:28px;border:1px solid var(--border);margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{margin-bottom:16px;}
+  label{display:block;font-weight:600;color:var(--azul);margin-bottom:6px;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;}
+  input,select,textarea{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-family:'Barlow',sans-serif;font-size:0.95rem;transition:border-color 0.2s;outline:none;background:#f8fafc;}
+  input:focus,select:focus,textarea:focus{border-color:var(--verde-claro);background:#fff;}
+  textarea{resize:vertical;min-height:80px;}
+  .btn{padding:10px 22px;border:none;border-radius:10px;font-family:'Barlow',sans-serif;font-weight:600;cursor:pointer;font-size:0.92rem;transition:all 0.2s;}
+  .btn-primary{background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;box-shadow:0 3px 12px rgba(11,61,110,0.3);}
+  .btn-primary:hover{opacity:0.9;transform:translateY(-1px);}
+  .btn-danger{background:var(--rojo);color:#fff;}
+  .btn-danger:hover{opacity:0.85;}
+  .btn-success{background:var(--verde);color:#fff;}
+  .btn-warning{background:#d97706;color:#fff;}
+  .btn-sm{padding:6px 14px;font-size:0.83rem;}
+
+  /* TABLES */
+  .table-wrap{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+  table{width:100%;border-collapse:collapse;}
+  th{background:var(--azul);color:#fff;padding:12px 16px;text-align:left;font-size:0.83rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+  td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:0.9rem;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#f8fafc;}
+  .toggle-btn{padding:5px 14px;border:none;border-radius:20px;cursor:pointer;font-size:0.8rem;font-weight:700;transition:all 0.2s;}
+  .toggle-btn.activo{background:#d1fae5;color:#065f46;}
+  .toggle-btn.inactivo{background:#fee2e2;color:#991b1b;}
+  .nivel-badge{padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;}
+  .nivel-Excelente{background:#d1fae5;color:#065f46;}
+  .nivel-Bueno{background:#dbeafe;color:#1e40af;}
+  .nivel-Básico{background:#fef3c7;color:#92400e;}
+  .nivel-Bajo{background:#fee2e2;color:#991b1b;}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:20px;padding:32px;max-width:680px;width:95%;max-height:90vh;overflow-y:auto;}
+  .modal h3{font-family:'Playfair Display',serif;color:var(--azul);font-size:1.3rem;margin-bottom:20px;}
+  .modal-close{float:right;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);}
+
+  /* ESTILOS PxP ADMIN */
+  .det-preg-card { padding:13px 15px; border-radius:10px; margin-bottom:10px; border:2px solid; }
+  .det-preg-card.correcta { background:#f0fdf4; border-color:#86efac; }
+  .det-preg-card.incorrecta { background:#fff1f2; border-color:#fca5a5; }
+  .det-preg-card.sinresp { background:#f8fafc; border-color:#e2e8f0; }
+  .det-op-row { display:flex; align-items:center; gap:8px; font-size:0.88rem; margin-top:5px; }
+  .det-op-badge { width:24px; height:24px; min-width:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.78rem; color:#fff; }
+
+  /* PREGUNTAS EDITOR */
+  .pregunta-editor{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;position:relative;}
+  .pregunta-editor:hover{border-color:#93c5fd;}
+  .img-drop-zone{border:2px dashed #93c5fd;border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;background:#eff6ff;}
+  .img-drop-zone:hover{background:#dbeafe;border-color:var(--azul-claro);}
+  .pregunta-editor input,.pregunta-editor select{margin-bottom:8px;}
+  .opcion-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+  .opcion-row .opcion-label{font-size:0.85rem;font-weight:700;color:var(--azul);width:22px;flex-shrink:0;}
+
+  /* MSG */
+  .msg{padding:10px 16px;border-radius:8px;margin-top:10px;display:none;font-size:0.9rem;font-weight:500;}
+  .msg.success{background:#d1fae5;color:#065f46;}
+  .msg.error{background:#fee2e2;color:#991b1b;}
+
+  /* HISTORIAL DETAIL */
+  .area-res{background:#eff6ff;border-radius:10px;padding:12px 16px;margin-bottom:10px;border-left:4px solid var(--azul-claro);}
+  .area-res h5{color:var(--azul);margin-bottom:4px;}
+  .progress-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:6px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--verde),var(--azul-claro));border-radius:4px;}
+
+  .tab-group{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  .tab-btn{padding:9px 20px;border:2px solid var(--border);border-radius:10px;background:var(--card);color:var(--muted);cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;font-size:0.88rem;transition:all 0.2s;}
+  .tab-btn.active{background:var(--azul);color:#fff;border-color:var(--azul);}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/logo.png" alt="Logo">
+    <div>
+      <div style="color:#fff;font-size:0.82rem;font-weight:600">ENS Alto Sinú</div>
+      <div class="admin-tag">Administrador</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('resumen')"><span class="icon">🏠</span> Resumen</div>
+    <div class="nav-item" onclick="showPage('simulacros')"><span class="icon">📋</span> Simulacros</div>
+    <div class="nav-item" onclick="showPage('usuarios')"><span class="icon">👥</span> Estudiantes</div>
+    <div class="nav-item" onclick="showPage('resultados')"><span class="icon">📊</span> Resultados</div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/auth/logout" class="btn-logout">🚪 Cerrar Sesión</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h1 id="pageTitle">Panel Administrativo</h1>
+    <div class="topbar-right">Escuela Normal Superior del Alto Sinú · 2026</div>
+  </div>
+  <div class="content">
+
+    <div class="page active" id="page-resumen">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-num" id="statSimulacros">0</div><div class="stat-label">Simulacros totales</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-num" id="statActivos">0</div><div class="stat-label">Simulacros activos</div></div>
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num" id="statEstudiantes">0</div><div class="stat-label">Estudiantes registrados</div></div>
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num" id="statResultados">0</div><div class="stat-label">Pruebas presentadas</div></div>
+      </div>
+      <div class="section-title">📊 Últimos Resultados</div>
+      <div class="table-wrap" id="recentResultados"></div>
+    </div>
+
+    <div class="page" id="page-simulacros">
+      <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">
+        <button class="tab-btn active" id="tabManual" onclick="switchSimTab('manual')">📝 Crear con PDF/Preguntas</button>
+        <button class="tab-btn" id="tabHtml" onclick="switchSimTab('html')">🌐 Cargar HTML Completo</button>
+        <button class="tab-btn" id="tabCompleto" onclick="switchSimTab('completo')" style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:none">✏️ Crear Simulacro Completo</button>
+      </div>
+
+      <div id="simTabManual">
+        <div class="form-card">
+          <div class="section-title" style="margin-bottom:20px">➕ Nuevo Simulacro (manual)</div>
+          <div class="form-row">
+            <div class="form-group"><label>Nombre del Simulacro</label><input type="text" id="simNombre" placeholder="Ej: Simulacro 1 - Primer Período"></div>
+            <div class="form-group"><label>Duración (minutos)</label><input type="number" id="simDuracion" value="120" min="10" max="360"></div>
+          </div>
+          <div class="form-group"><label>Descripción</label><textarea id="simDesc" placeholder="Descripción del simulacro..."></textarea></div>
+          <button class="btn btn-primary" onclick="crearSimulacro()">✨ Crear Simulacro</button>
+          <div class="msg" id="simMsg"></div>
+        </div>
+      </div>
+
+      <div id="simTabHtml" style="display:none">
+        <div class="form-card" style="border-left:4px solid #7c3aed">
+          <div class="section-title" style="margin-bottom:6px;color:#7c3aed">🌐 Cargar Simulacro HTML Completo</div>
+          <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px">Sube el archivo <strong>.html</strong> del simulacro — con sus preguntas, respuestas correctas y timer integrados. El sistema lo publica para los estudiantes y captura los resultados automáticamente.</p>
+          <div style="background:#f5f3ff;border:2px dashed #7c3aed;border-radius:12px;padding:20px;margin-bottom:20px" id="dropZone">
+            <div style="text-align:center;margin-bottom:12px">
+              <div style="font-size:3rem">📄</div>
+              <div style="font-weight:700;color:#5b21b6;font-size:1rem">Arrastra el HTML aquí o haz clic para seleccionar</div>
+              <div style="font-size:0.82rem;color:#7c3aed;margin-top:4px">Formatos: .html · Máximo 15MB</div>
+            </div>
+            <input type="file" id="htmlFileInput" accept=".html,.htm" style="width:100%;padding:10px;background:#fff;border:1px solid #ddd6fe;border-radius:8px;cursor:pointer">
+            <div id="htmlFilePreview" style="display:none;margin-top:12px;padding:12px;background:#ede9fe;border-radius:8px;font-size:0.88rem;color:#5b21b6;display:flex;align-items:center;gap:10px"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Nombre para los estudiantes</label><input type="text" id="htmlSimNombre" placeholder="Ej: Simulacro 1 – Tipo ICFES"></div>
+            <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="htmlSimDesc" placeholder="Breve descripción"></div>
+          </div>
+          <div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:16px;font-size:0.85rem;color:#92400e">
+            <strong>ℹ️ Detección automática:</strong> El sistema leerá del HTML el número de preguntas, clave de respuestas y duración del timer. No es necesario configurarlos manualmente.
+          </div>
+          <button class="btn btn-primary" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);font-size:1rem;padding:12px 28px" onclick="subirHtmlSimulacro()">📤 Publicar Simulacro HTML</button>
+          <div class="msg" id="htmlSimMsg"></div>
+        </div>
+      </div>
+
+      <div id="simTabCompleto" style="display:none">
+        <div class="form-card" style="border-left:4px solid #7c3aed">
+          <div class="section-title" style="margin-bottom:6px;color:#7c3aed">✏️ Crear Simulacro Completo (tipo ICFES)</div>
+          <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px">Define el nombre, las <strong>áreas ICFES</strong>, y agrega todas las preguntas con sus opciones A/B/C/D y la clave de respuesta correcta. El sistema calificará automáticamente por área.</p>
+
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group"><label>Nombre del Simulacro *</label><input type="text" id="scNombre" placeholder="Ej: Simulacro 1 – Primer Período"></div>
+            <div class="form-group"><label>Duración (minutos)</label><input type="number" id="scDuracion" value="120" min="10" max="360"></div>
+          </div>
+          <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="scDesc" placeholder="Breve descripción del simulacro"></div>
+
+          <div style="border-top:2px solid #ede9fe;padding-top:20px;margin-top:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+              <strong style="color:#5b21b6;font-size:1rem">📚 Áreas del Simulacro</strong>
+              <button class="btn btn-sm" style="background:#7c3aed;color:#fff" onclick="scAgregarArea()">➕ Agregar Área</button>
+            </div>
+
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+              <span style="font-size:0.8rem;color:#94a3b8;align-self:center">Áreas ICFES:</span>
+              <button class="btn btn-sm" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe" onclick="scAgregarAreaRapida('Lectura Crítica')">Lectura Crítica</button>
+              <button class="btn btn-sm" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe" onclick="scAgregarAreaRapida('Matemáticas')">Matemáticas</button>
+              <button class="btn btn-sm" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe" onclick="scAgregarAreaRapida('Ciencias Naturales')">Ciencias Nat.</button>
+              <button class="btn btn-sm" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe" onclick="scAgregarAreaRapida('Ciencias Sociales')">Ciencias Soc.</button>
+              <button class="btn btn-sm" style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe" onclick="scAgregarAreaRapida('Inglés')">Inglés</button>
+            </div>
+
+            <div id="scAreasContainer">
+              <div style="text-align:center;padding:30px;color:#94a3b8;background:#f8fafc;border-radius:12px;border:2px dashed #e2e8f0">
+                👆 Agrega un área usando los botones de arriba
+              </div>
+            </div>
+          </div>
+
+          <div id="scResumen" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:16px;margin-top:16px">
+            <div style="font-weight:700;color:#166534;margin-bottom:8px">📊 Resumen del simulacro:</div>
+            <div id="scResumenContent" style="font-size:0.88rem;color:#14532d;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px"></div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb);font-size:1rem;padding:13px 28px" onclick="scGuardarSimulacro()">💾 Guardar Simulacro Completo</button>
+            <button class="btn" style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;padding:13px 18px" onclick="scVistaPreviaResumen()">👁 Ver resumen</button>
+          </div>
+          <div class="msg" id="scMsg"></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px">📋 Simulacros Existentes</div>
+      <div id="simListContainer"></div>
+    </div>
+
+    <div class="page" id="page-usuarios">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px">
+        <div class="section-title" style="margin-bottom:0;">👥 Estudiantes Registrados</div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="buscadorEstudiantes" placeholder="Buscar por nombre o doc..." style="padding:9px 14px; border:2px solid var(--border); border-radius:10px; min-width:260px; font-family:'Barlow',sans-serif; font-size:0.9rem" onkeyup="buscarEstudiante()">
+          <button class="btn btn-primary" onclick="buscarEstudiante()" style="background:linear-gradient(135deg, var(--azul), var(--azul-claro)); box-shadow:0 3px 10px rgba(11,61,110,0.2);">
+            🔍 Buscar
+          </button>
+        </div>
+      </div>
+      <div class="msg" id="usuariosMsg" style="display:none;margin-bottom:16px"></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Nombre</th><th>Documento</th><th>Grado</th><th>Registrado</th><th>Pruebas</th><th>Historial</th><th>Contraseña</th><th>Eliminar</th></tr></thead>
+        <tbody id="usuariosBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="page" id="page-resultados">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div class="tab-group" id="gradoTabs" style="margin-bottom:0">
+          <button class="tab-btn active" onclick="filtrarGrado('todos',this)">Todos</button>
+          <button class="tab-btn" onclick="filtrarGrado('11-01',this)">11-01</button>
+          <button class="tab-btn" onclick="filtrarGrado('11-02',this)">11-02</button>
+          <button class="tab-btn" onclick="filtrarGrado('11-03',this)">11-03</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-success" onclick="descargarCSVResultados()" style="background:#16a34a;border:none;box-shadow:0 3px 10px rgba(22,163,74,0.3)">
+            📥 Descargar Grupo (CSV)
+          </button>
+          <select id="selectSimEstadisticas" style="padding:9px 14px;border:2px solid var(--border);border-radius:10px;font-family:'Barlow',sans-serif;font-size:0.88rem;min-width:220px;background:#fff">
+            <option value="">— Selecciona simulacro —</option>
+          </select>
+          <button class="btn btn-primary" onclick="abrirEstadisticas()" style="background:linear-gradient(135deg,#d97706,#b45309);border:none;box-shadow:0 3px 12px rgba(217,119,6,0.3)">
+            📊 Estadísticas Generales
+          </button>
+        </div>
+      </div>
+      <div class="section-title">📊 Historial de Resultados</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Estudiante</th><th>Doc.</th><th>Grado</th><th>Simulacro</th><th>Fecha</th><th>Puntaje</th><th>Nivel</th><th>Tiempo</th><th>Detalle</th><th>P×P</th></tr></thead>
+        <tbody id="resultadosBody"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalSim">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalSim')">✕</button>
+    <h3 id="modalSimTitulo">Gestionar Simulacro</h3>
+    <div id="modalSimContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalPregs">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalPregs')">✕</button>
+    <h3 id="modalPregsTitulo">Agregar Preguntas</h3>
+    <div id="modalPregsContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalResultado">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalResultado')">✕</button>
+    <h3>📊 Detalle del Resultado</h3>
+    <div id="modalResultadoContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalHistorial">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalHistorial')">✕</button>
+    <h3 id="modalHistorialTitulo">Historial del Estudiante</h3>
+    <div id="modalHistorialContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalResetContrasena">
+  <div class="modal" style="max-width:460px">
+    <button class="modal-close" onclick="closeModal('modalResetContrasena')">✕</button>
+    <h3>🔑 Restablecer Contraseña</h3>
+    <input type="hidden" id="resetDoc">
+    <div style="background:#eff6ff;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:0.9rem">
+      <strong style="color:#0b3d6e" id="resetNombre"></strong><br>
+      <span style="color:#64748b;font-size:0.82rem">Documento: <strong id="resetDocLabel"></strong></span>
+    </div>
+    <div class="form-group">
+      <label>Nueva Contraseña</label>
+      <input type="password" id="nuevaContrasena" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label>Confirmar Contraseña</label>
+      <input type="password" id="confirmarContrasena" placeholder="Repite la contraseña" autocomplete="new-password">
+    </div>
+    <div class="msg" id="resetMsg" style="display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="guardarResetContrasena()" style="flex:1">💾 Guardar Contraseña</button>
+      <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="closeModal('modalResetContrasena')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalEstadisticas">
+  <div class="modal" style="max-width:860px">
+    <button class="modal-close" onclick="closeModal('modalEstadisticas')">✕</button>
+    <h3>📊 Estadísticas Generales por Pregunta</h3>
+    <div id="modalEstadisticasContent"><div style="text-align:center;padding:40px;color:#94a3b8">Cargando estadísticas...</div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalPxPAdmin">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-close" onclick="closeModal('modalPxPAdmin')">✕</button>
+    <h3 id="modalPxPAdminTitulo">📋 Respuesta por Pregunta</h3>
+    <div id="modalPxPAdminContent"><div style="text-align:center;padding:30px;color:#64748b">Cargando...</div></div>
+  </div>
+</div>
+
+<script>
+let allResultados = [];
+let gradoFiltro = 'todos';
+let currentSimId = null;
+let currentAreaIdx = null;
+let preguntasEdit = [];
+
+// ---- PAGE NAVIGATION ----
+const pageTitles = {resumen:'Panel de Resumen',simulacros:'Gestión de Simulacros',usuarios:'Estudiantes',resultados:'Resultados y Progreso'};
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-item')[['resumen','simulacros','usuarios','resultados'].indexOf(name)].classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[name];
+  if(name==='resumen') loadResumen();
+  if(name==='simulacros') loadSimulacros();
+  if(name==='usuarios') loadUsuarios();
+  if(name==='resultados') loadResultados();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ---- RESUMEN ----
+async function loadResumen() {
+  const [simRes, usrRes, resRes] = await Promise.all([
+    fetch('/admin/simulacros').then(r=>r.json()),
+    fetch('/admin/usuarios').then(r=>r.json()),
+    fetch('/admin/resultados').then(r=>r.json())
+  ]);
+  const sims = simRes.simulacros||[];
+  const usuarios = usrRes.usuarios||[];
+  const resultados = resRes.resultados||[];
+  document.getElementById('statSimulacros').textContent = sims.length;
+  document.getElementById('statActivos').textContent = sims.filter(s=>s.activo).length;
+  document.getElementById('statEstudiantes').textContent = usuarios.length;
+  document.getElementById('statResultados').textContent = resultados.length;
+  allResultados = resultados;
+  const recent = resultados.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,8);
+  document.getElementById('recentResultados').innerHTML = recent.length ? `
+    <table><thead><tr><th>Estudiante</th><th>Grado</th><th>Simulacro</th><th>Puntaje</th><th>Nivel</th></tr></thead>
+    <tbody>${recent.map(r=>`<tr>
+      <td>${r.estudianteNombre}</td><td>${r.grado}</td><td>${r.simulacroNombre}</td>
+      <td><strong>${r.puntajeGlobal}/100</strong></td>
+      <td><span class="nivel-badge nivel-${r.nivel}">${r.nivel}</span></td>
+    </tr>`).join('')}</tbody></table>` :
+    '<div style="padding:30px;text-align:center;color:#94a3b8">No hay resultados aún.</div>';
+}
+
+// ---- SIMULACROS ----
+async function loadSimulacros() {
+  const res = await fetch('/admin/simulacros');
+  const data = await res.json();
+  const container = document.getElementById('simListContainer');
+  if (!data.simulacros || data.simulacros.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8">No hay simulacros creados aún.</div>';
+    return;
+  }
+  container.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nombre</th><th>Tipo</th><th>Duración</th><th>Preguntas</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr></thead>
+    <tbody>${data.simulacros.map(s=>`<tr>
+      <td><strong>${s.nombre}</strong><br><small style="color:#94a3b8">${s.descripcion||''}</small></td>
+      <td>${s.tipo==='html'
+        ? '<span style="background:#ede9fe;color:#5b21b6;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700">🌐 HTML</span>'
+        : s.tipo==='completo' ? '<span style="background:#f0fdf4;color:#166534;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700">✏️ Completo</span>'
+        : '<span style="background:#eff6ff;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700">📝 PDF</span>'}</td>
+      <td>${s.duracion} min</td>
+      <td>${s.tipo==='html'?(s.totalPreguntas||'auto'):(s.areas||[]).reduce((a,ar)=>a+(ar.preguntas?ar.preguntas.length:0),0)}</td>
+      <td><button class="toggle-btn ${s.activo?'activo':'inactivo'}" onclick="toggleSim('${s.id}',this)">${s.activo?'✅ Activo':'🔒 Inactivo'}</button></td>
+      <td>${new Date(s.creadoEn).toLocaleDateString('es-CO')}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        ${s.tipo==='html'
+          ? `<a href="${s.htmlPath}" target="_blank" class="btn btn-sm btn-success">👁 Ver</a>`
+          : `<button class="btn btn-sm btn-primary" onclick="gestionarSim('${s.id}')">⚙️ Gestionar</button>`}
+        <button class="btn btn-sm btn-danger" onclick="eliminarSim('${s.id}')">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function switchSimTab(tab) {
+  ['manual','html','completo'].forEach(t => {
+    const el = document.getElementById('simTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  // Special style for completo tab
+  const btnC = document.getElementById('tabCompleto');
+  if (btnC) {
+    if (tab === 'completo') { btnC.style.background='linear-gradient(135deg,#7c3aed,#2563eb)'; btnC.style.color='#fff'; }
+    else { btnC.style.background=''; btnC.style.color=''; }
+  }
+}
+
+// File preview
+document.addEventListener('DOMContentLoaded', function() {
+  const fi = document.getElementById('htmlFileInput');
+  if (fi) fi.addEventListener('change', function() {
+    const f = this.files[0];
+    const prev = document.getElementById('htmlFilePreview');
+    if (f) {
+      prev.style.display = 'flex';
+      prev.innerHTML = '<span style="font-size:1.5rem">📄</span><div><strong>' + f.name + '</strong><div style="font-size:0.78rem;opacity:0.8">' + (f.size/1024).toFixed(1) + ' KB — Listo para subir</div></div>';
+      // Auto-fill nombre if empty
+      const nn = document.getElementById('htmlSimNombre');
+      if (nn && !nn.value) nn.value = f.name.replace(/[_-]/g,' ').replace(/\.html?$/i,'').replace(/\d{13}_/,'');
+    } else {
+      prev.style.display = 'none';
+    }
+  });
+});
+
+async function subirHtmlSimulacro() {
+  const file = document.getElementById('htmlFileInput').files[0];
+  const nombre = document.getElementById('htmlSimNombre').value.trim();
+  const descripcion = document.getElementById('htmlSimDesc').value.trim();
+  if (!file) return showMsg('htmlSimMsg','Selecciona un archivo HTML primero','error');
+  if (!nombre) return showMsg('htmlSimMsg','Escribe el nombre del simulacro','error');
+  showMsg('htmlSimMsg','⏳ Subiendo y procesando HTML...','success');
+  const fd = new FormData();
+  fd.append('htmlFile', file);
+  fd.append('nombre', nombre);
+  fd.append('descripcion', descripcion);
+  const res = await fetch('/admin/simulacros/upload-html', {method:'POST', body: fd});
+  const data = await res.json();
+  if (data.success) {
+    const sim = data.simulacro;
+    const info = sim.totalPreguntas ? ` | ${sim.totalPreguntas} preguntas detectadas | ${sim.duracion} min` : '';
+    showMsg('htmlSimMsg', '✅ Simulacro publicado exitosamente' + info, 'success');
+    document.getElementById('htmlFileInput').value = '';
+    document.getElementById('htmlFilePreview').style.display = 'none';
+    document.getElementById('htmlSimNombre').value = '';
+    document.getElementById('htmlSimDesc').value = '';
+    loadSimulacros();
+  } else {
+    showMsg('htmlSimMsg', '❌ ' + data.message, 'error');
+  }
+}
+
+async function crearSimulacro() {
+  const nombre = document.getElementById('simNombre').value.trim();
+  const duracion = document.getElementById('simDuracion').value;
+  const descripcion = document.getElementById('simDesc').value.trim();
+  if (!nombre) return showMsg('simMsg','Ingresa el nombre del simulacro','error');
+  const res = await fetch('/admin/simulacros',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,duracion,descripcion})});
+  const data = await res.json();
+  showMsg('simMsg',data.success?'✅ Simulacro creado exitosamente':'❌ '+data.message,data.success?'success':'error');
+  if(data.success){document.getElementById('simNombre').value='';document.getElementById('simDesc').value='';loadSimulacros();}
+}
+
+async function toggleSim(id, btn) {
+  const res = await fetch(`/admin/simulacros/${id}/toggle`,{method:'PUT'});
+  const data = await res.json();
+  if(data.success){btn.textContent=data.activo?'✅ Activo':'🔒 Inactivo';btn.className=`toggle-btn ${data.activo?'activo':'inactivo'}`;}
+}
+
+async function eliminarSim(id) {
+  if(!confirm('¿Eliminar este simulacro?')) return;
+  await fetch(`/admin/simulacros/${id}`,{method:'DELETE'});
+  loadSimulacros();
+}
+
+async function gestionarSim(id) {
+  currentSimId = id;
+  const res = await fetch('/admin/simulacros');
+  const data = await res.json();
+  const sim = data.simulacros.find(s=>s.id===id);
+  if(!sim) return;
+  const areasNombres = ['Lectura Crítica','Matemáticas','Ciencias Naturales','Ciencias Sociales','Inglés','Competencias Ciudadanas'];
+  document.getElementById('modalSimTitulo').textContent = `⚙️ ${sim.nombre}`;
+  document.getElementById('modalSimContent').innerHTML = `
+    <div style="margin-bottom:24px">
+      <div class="section-title" style="font-size:1rem;margin-bottom:14px">📎 Cargar PDF por Área</div>
+      <div class="form-group"><label>Área</label>
+        <select id="pdfAreaNombre">
+          ${areasNombres.map(a=>`<option value="${a}">${a}</option>`).join('')}
+          <option value="Otra">Otra (especificar)</option>
+        </select>
+      </div>
+      <div class="form-group" id="otraAreaGrupo" style="display:none"><label>Nombre del área</label><input type="text" id="otraAreaInput" placeholder="Nombre del área"></div>
+      <div class="form-group"><label>Archivo PDF</label><input type="file" id="pdfFile" accept=".pdf"></div>
+      <button class="btn btn-primary" onclick="subirPDF('${id}')">📤 Subir PDF</button>
+      <div class="msg" id="pdfMsg"></div>
+    </div>
+    <div>
+      <div class="section-title" style="font-size:1rem;margin-bottom:14px">📝 Áreas Cargadas</div>
+      ${(sim.areas||[]).length===0?'<p style="color:#94a3b8;text-align:center;padding:20px">Sin áreas aún. Sube un PDF para agregar.</p>':
+      sim.areas.map((a,i)=>`
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <strong>${a.nombre}</strong>
+              ${a.pdfPath?'<span style="color:var(--verde);font-size:0.82rem;margin-left:8px">✅ PDF cargado</span>':'<span style="color:#94a3b8;font-size:0.82rem;margin-left:8px">Sin PDF</span>'}
+              <div style="color:#94a3b8;font-size:0.82rem;margin-top:2px">${a.preguntas?a.preguntas.length:0} preguntas</div>
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="editarPreguntas('${id}',${i},'${a.nombre}')">✏️ Preguntas</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('pdfAreaNombre').addEventListener('change',function(){
+    document.getElementById('otraAreaGrupo').style.display=this.value==='Otra'?'block':'none';
+  });
+  document.getElementById('modalSim').classList.add('open');
+}
+
+async function subirPDF(simId) {
+  const areaSel = document.getElementById('pdfAreaNombre').value;
+  const areaNombre = areaSel==='Otra'?document.getElementById('otraAreaInput').value.trim():areaSel;
+  const file = document.getElementById('pdfFile').files[0];
+  if(!areaNombre) return showMsg('pdfMsg','Ingresa el nombre del área','error');
+  if(!file) return showMsg('pdfMsg','Selecciona un archivo PDF','error');
+  const fd = new FormData();
+  fd.append('areaNombre',areaNombre);
+  fd.append('pdf',file);
+  showMsg('pdfMsg','Subiendo PDF...','success');
+  const res = await fetch(`/admin/simulacros/${simId}/area-pdf`,{method:'POST',body:fd});
+  const data = await res.json();
+  showMsg('pdfMsg',data.success?'✅ PDF cargado correctamente':'❌ '+data.message,data.success?'success':'error');
+  if(data.success){setTimeout(()=>gestionarSim(simId),1500);}
+}
+
+function editarPreguntas(simId, areaIdx, areaNombre) {
+  currentSimId = simId;
+  currentAreaIdx = areaIdx;
+  document.getElementById('modalPregsTitulo').textContent = `✏️ Preguntas – ${areaNombre}`;
+  preguntasEdit = [];
+  renderPreguntasEditor();
+  document.getElementById('modalPregs').classList.add('open');
+}
+
+function renderPreguntasEditor() {
+  const letras = ['A','B','C','D'];
+  const html = preguntasEdit.map((p,i)=>`
+    <div class="pregunta-editor" id="pregEdit-${i}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <strong style="color:var(--azul)">Pregunta ${i+1}</strong>
+        <button class="btn btn-sm btn-danger" onclick="eliminarPregEdit(${i})">🗑 Eliminar</button>
+      </div>
+
+      <label>Enunciado / Texto de la pregunta</label>
+      <textarea placeholder="Escribe el enunciado de la pregunta..." rows="3"
+        style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;font-family:Barlow,sans-serif;font-size:0.93rem;resize:vertical;margin-bottom:10px"
+        onchange="preguntasEdit[${i}].texto=this.value">${p.texto||''}</textarea>
+
+      <label style="margin-bottom:6px;display:block">📷 Imagen para la pregunta <span style="color:#94a3b8;font-weight:400;font-size:0.8rem">(opcional)</span></label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#eff6ff;border:2px dashed #93c5fd;border-radius:8px;cursor:pointer;font-size:0.85rem;color:var(--azul-claro);font-weight:600;text-transform:none;letter-spacing:0">
+          📁 Seleccionar imagen
+          <input type="file" accept="image/*" style="display:none" onchange="subirImagenPregunta(${i}, this)">
+        </label>
+        <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b" onclick="quitarImagenPregunta(${i})" ${!p.imagen?'style="display:none"':''} id="btnQuitarImg-${i}">✕ Quitar imagen</button>
+        <span style="font-size:0.8rem;color:#94a3b8" id="imgStatus-${i}">${p.imagen?'✅ Imagen cargada':'Sin imagen'}</span>
+      </div>
+      ${p.imagen ? `<div id="imgPreview-${i}" style="margin-bottom:12px"><img src="${p.imagen}" alt="Imagen pregunta" style="max-width:100%;max-height:200px;border-radius:8px;border:2px solid var(--border);object-fit:contain"></div>` : `<div id="imgPreview-${i}"></div>`}
+
+      <label>Opciones de respuesta</label>
+      ${letras.slice(0,4).map((l,oi)=>`
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0">${l}</div>
+          <input type="text" placeholder="Opción ${l}" value="${(p.opciones&&p.opciones[oi])||''}"
+            style="flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-family:Barlow,sans-serif;font-size:0.9rem"
+            onchange="preguntasEdit[${i}].opciones[${oi}]=this.value">
+          <label style="cursor:pointer;padding:6px 10px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:#64748b;white-space:nowrap" title="Agregar imagen a opción ${l}">
+            🖼
+            <input type="file" accept="image/*" style="display:none" onchange="subirImagenOpcion(${i},${oi},this)">
+          </label>
+          <span id="opImgStatus-${i}-${oi}" style="font-size:0.75rem;color:#94a3b8">${(p.imagenesOpciones&&p.imagenesOpciones[oi])?'🖼':'—'}</span>
+        </div>`).join('')}
+
+      <label style="margin-top:4px">Respuesta correcta</label>
+      <select style="width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-family:Barlow,sans-serif;font-size:0.93rem;margin-bottom:4px"
+        onchange="preguntasEdit[${i}].respuestaCorrecta=parseInt(this.value)">
+        ${letras.slice(0,4).map((l,oi)=>`<option value="${oi}" ${p.respuestaCorrecta===oi?'selected':''}>${l} – Opción ${l}</option>`).join('')}
+      </select>
+    </div>`).join('');
+
+  document.getElementById('modalPregsContent').innerHTML = `
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#166534">
+      💡 <strong>Tip:</strong> Puedes agregar imágenes a cada pregunta o a cada opción de respuesta (ideal para mapas, gráficas, tablas, etc.)
+    </div>
+    ${html || '<div style="text-align:center;padding:30px;color:#94a3b8">Aún no hay preguntas. Agrega la primera.</div>'}
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn btn-success" onclick="agregarPregEdit()">➕ Agregar Pregunta</button>
+      <button class="btn btn-primary" onclick="guardarPreguntas()">💾 Guardar Todo</button>
+    </div>
+    <div class="msg" id="pregsMsg"></div>`;
+}
+
+async function subirImagenPregunta(pregIdx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('imagen', file);
+  document.getElementById('imgStatus-' + pregIdx).textContent = '⏳ Subiendo...';
+  const res = await fetch('/admin/upload-imagen', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    preguntasEdit[pregIdx].imagen = data.url;
+    document.getElementById('imgStatus-' + pregIdx).textContent = '✅ Imagen cargada';
+    document.getElementById('imgPreview-' + pregIdx).innerHTML = `<img src="${data.url}" alt="Imagen" style="max-width:100%;max-height:200px;border-radius:8px;border:2px solid var(--border);object-fit:contain;margin-bottom:10px">`;
+    const btnQ = document.getElementById('btnQuitarImg-' + pregIdx);
+    if (btnQ) btnQ.style.display = 'inline-flex';
+  } else {
+    document.getElementById('imgStatus-' + pregIdx).textContent = '❌ Error al subir';
+  }
+}
+
+function quitarImagenPregunta(pregIdx) {
+  preguntasEdit[pregIdx].imagen = null;
+  document.getElementById('imgPreview-' + pregIdx).innerHTML = '';
+  document.getElementById('imgStatus-' + pregIdx).textContent = 'Sin imagen';
+  const btn = document.getElementById('btnQuitarImg-' + pregIdx);
+  if (btn) btn.style.display = 'none';
+}
+
+async function subirImagenOpcion(pregIdx, opcionIdx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('imagen', file);
+  const statusEl = document.getElementById(`opImgStatus-${pregIdx}-${opcionIdx}`);
+  if (statusEl) statusEl.textContent = '⏳';
+  const res = await fetch('/admin/upload-imagen', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    if (!preguntasEdit[pregIdx].imagenesOpciones) preguntasEdit[pregIdx].imagenesOpciones = [];
+    preguntasEdit[pregIdx].imagenesOpciones[opcionIdx] = data.url;
+    if (statusEl) statusEl.textContent = '🖼✅';
+  } else {
+    if (statusEl) statusEl.textContent = '❌';
+  }
+}
+
+function agregarPregEdit() {
+  preguntasEdit.push({ texto:'', opciones:['','','',''], respuestaCorrecta:0, imagen:null, imagenesOpciones:[] });
+  renderPreguntasEditor();
+  setTimeout(()=>{ const m=document.querySelector('#modalPregs .modal'); if(m) m.scrollTop=m.scrollHeight; },100);
+}
+
+function eliminarPregEdit(idx) {
+  if(!confirm('¿Eliminar pregunta?')) return;
+  preguntasEdit.splice(idx,1);
+  renderPreguntasEditor();
+}
+
+async function guardarPreguntas() {
+  preguntasEdit.forEach((p,i) => {
+    const el = document.getElementById(`pregEdit-${i}`);
+    if (!el) return;
+    const ta = el.querySelector('textarea');
+    if (ta) p.texto = ta.value;
+    const sels = el.querySelectorAll('select');
+    if (sels.length) p.respuestaCorrecta = parseInt(sels[sels.length-1].value);
+    const rows = el.querySelectorAll('input[type=text]');
+    rows.forEach((inp, oi) => { if (!p.opciones) p.opciones = []; p.opciones[oi] = inp.value; });
+  });
+  const res = await fetch(`/admin/simulacros/${currentSimId}/areas/${currentAreaIdx}/preguntas`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ preguntas: preguntasEdit })
+  });
+  const data = await res.json();
+  showMsg('pregsMsg', data.success ? '✅ Preguntas guardadas correctamente' : '❌ Error al guardar', data.success ? 'success' : 'error');
+}
+
+// ---- USUARIOS ----
+async function loadUsuarios() {
+  const [usrRes, resRes] = await Promise.all([
+    fetch('/admin/usuarios').then(r=>r.json()),
+    fetch('/admin/resultados').then(r=>r.json())
+  ]);
+  const usuarios = usrRes.usuarios||[];
+  const resultados = resRes.resultados||[];
+  const body = document.getElementById('usuariosBody');
+  if(!usuarios.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">Sin estudiantes registrados.</td></tr>';return;}
+  body.innerHTML=usuarios.map(u=>{
+    const nPruebas=resultados.filter(r=>r.documento===u.documento).length;
+    return`<tr>
+      <td><strong>${u.nombres} ${u.apellidos}</strong></td>
+      <td>${u.documento}</td>
+      <td><span class="nivel-badge" style="background:#eff6ff;color:#1e40af">${u.grado}</span></td>
+      <td>${new Date(u.createdAt).toLocaleDateString('es-CO')}</td>
+      <td><strong>${nPruebas}</strong></td>
+      <td><button class="btn btn-sm btn-primary" onclick="verHistorialEstudiante('${u.documento}','${u.nombres} ${u.apellidos}')">📊 Historial</button></td>
+      <td><button class="btn btn-sm btn-warning" onclick="abrirResetContrasena('${u.documento}','${u.nombres} ${u.apellidos}')">🔑 Contraseña</button></td>
+      <td><button class="btn btn-sm btn-danger" onclick="eliminarEstudiante('${u.documento}','${u.nombres} ${u.apellidos}')">🗑 Eliminar</button></td>
+    </tr>`;}).join('');
+}
+
+async function verHistorialEstudiante(doc, nombre) {
+  const res = await fetch(`/admin/resultados/usuario/${doc}`);
+  const data = await res.json();
+  document.getElementById('modalHistorialTitulo').textContent = `📊 Historial: ${nombre}`;
+  const resultados = data.resultados||[];
+  if(!resultados.length){document.getElementById('modalHistorialContent').innerHTML='<p style="text-align:center;padding:30px;color:#94a3b8">Sin resultados aún.</p>';}
+  else {
+    const avg = Math.round(resultados.reduce((a,r)=>a+r.puntajeGlobal,0)/resultados.length);
+    document.getElementById('modalHistorialContent').innerHTML=`
+      <div style="background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;border-radius:14px;padding:20px;margin-bottom:20px;text-align:center">
+        <div style="font-size:2.5rem;font-weight:700;font-family:'Playfair Display',serif">${avg}</div>
+        <div style="opacity:0.85">Promedio Global</div>
+        <div style="margin-top:4px;font-size:0.85rem;opacity:0.75">${resultados.length} prueba(s) presentadas</div>
+      </div>
+      ${resultados.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(r=>`
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div><strong>${r.simulacroNombre}</strong><br><small style="color:#94a3b8">${new Date(r.fecha).toLocaleString('es-CO')}</small></div>
+            <div style="text-align:right">
+              <div style="font-size:1.5rem;font-weight:700;color:var(--azul)">${r.puntajeGlobal}/100</div>
+              <span class="nivel-badge nivel-${r.nivel}">${r.nivel}</span>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            ${(r.resultadoAreas||[]).map(a=>`
+              <div class="area-res"><h5>${a.area}</h5>
+                <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#64748b"><span>${a.correctas}/${a.total}</span><strong>${a.puntaje}/100</strong></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${a.puntaje}%"></div></div>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}`;
+  }
+  document.getElementById('modalHistorial').classList.add('open');
+}
+
+// ---- RESULTADOS ----
+async function loadResultados() {
+  const res = await fetch('/admin/resultados');
+  const data = await res.json();
+  allResultados = data.resultados||[];
+  renderResultados();
+  cargarListaSimulacros(); 
+}
+
+function filtrarGrado(grado, btn) {
+  gradoFiltro = grado;
+  document.querySelectorAll('#gradoTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResultados();
+}
+
+function renderResultados() {
+  const filtered = gradoFiltro==='todos'?allResultados:allResultados.filter(r=>r.grado===gradoFiltro);
+  const body = document.getElementById('resultadosBody');
+  if(!filtered.length){body.innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8">Sin resultados.</td></tr>';return;}
+  body.innerHTML=filtered.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(r=>`<tr>
+    <td><strong>${r.estudianteNombre}</strong></td>
+    <td>${r.documento}</td>
+    <td>${r.grado}</td>
+    <td>${r.simulacroNombre}</td>
+    <td>${new Date(r.fecha).toLocaleDateString('es-CO')}</td>
+    <td><strong style="color:var(--azul)">${r.puntajeGlobal}/100</strong></td>
+    <td><span class="nivel-badge nivel-${r.nivel}">${r.nivel}</span></td>
+    <td>${r.tiempoUsado||'N/D'}</td>
+    <td><button class="btn btn-sm btn-primary" onclick='showResultadoDetalle(${JSON.stringify(r)})'>Ver</button></td>
+    <td><button class="btn btn-sm" style="background:#7c3aed;color:#fff;border:none" onclick="verPxPEstudiante('${r.simulacroId}', '${r.documento}', '${r.estudianteNombre}')">📋 P×P</button></td>
+  </tr>`).join('');
+}
+
+function showResultadoDetalle(r) {
+  document.getElementById('modalResultadoContent').innerHTML=`
+    <div style="text-align:center;background:linear-gradient(135deg,var(--azul),var(--verde));color:#fff;border-radius:16px;padding:24px;margin-bottom:20px">
+      <div style="font-size:3.5rem;font-weight:700;font-family:'Playfair Display',serif">${r.puntajeGlobal}</div>
+      <div>Puntaje Global ICFES</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-top:6px">${r.nivel}</div>
+    </div>
+    <p style="color:#64748b;font-size:0.88rem;margin-bottom:16px">📅 ${new Date(r.fecha).toLocaleString('es-CO')} · ⏱ ${r.tiempoUsado||'N/D'} · ✅ ${r.totalCorrectas}/${r.totalPreguntas}</p>
+    ${(r.resultadoAreas||[]).map(a=>`
+      <div class="area-res"><h5>${a.area}</h5>
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#64748b"><span>${a.correctas}/${a.total} correctas</span><strong>${a.puntaje}/100</strong></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${a.puntaje}%"></div></div>
+      </div>`).join('')}`;
+  document.getElementById('modalResultado').classList.add('open');
+}
+
+// ── FUNCIÓN DE DESCARGA CSV (ACTUALIZADA PARA EXCEL) ──
+function descargarCSVResultados() {
+  const filtered = gradoFiltro === 'todos' ? allResultados : allResultados.filter(r => r.grado === gradoFiltro);
+  if(filtered.length === 0) return alert('No hay resultados para descargar en este grupo.');
+
+  // AÑADIDO: 'sep=;' en la primera línea le fuerza a Excel a entender que las columnas se separan con punto y coma
+  let csv = 'sep=;\nEstudiante;Documento;Grado;Simulacro;Fecha;Puntaje Global;Nivel;Tiempo Usado\n';
+  
+  filtered.forEach(r => {
+     const fecha = new Date(r.fecha).toLocaleDateString('es-CO');
+     // Cambiamos las comas por punto y coma (;)
+     csv += `"${r.estudianteNombre}";"${r.documento}";"${r.grado}";"${r.simulacroNombre}";"${fecha}";${r.puntajeGlobal};"${r.nivel}";"${r.tiempoUsado||'N/D'}"\n`;
+  });
+
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], {type: 'text/csv;charset=utf-8;'}); 
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Resultados_${gradoFiltro}_${new Date().getTime()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+// ── FUNCIÓN PARA VER PxP DEL ESTUDIANTE ──
+async function verPxPEstudiante(simId, doc, nombre) {
+  document.getElementById('modalPxPAdminTitulo').textContent = `📋 P×P: ${nombre}`;
+  document.getElementById('modalPxPAdminContent').innerHTML = '<div style="text-align:center;padding:30px;color:#64748b">⏳ Cargando datos del estudiante...</div>';
+  document.getElementById('modalPxPAdmin').classList.add('open');
+
+  try {
+    const res = await fetch(`/admin/resultado-detalle/${simId}/${doc}`);
+    const data = await res.json();
+    
+    if (!data.success) {
+      document.getElementById('modalPxPAdminContent').innerHTML = `<p style="color:#dc2626;padding:20px;text-align:center">Error: ${data.message||'No se pudo cargar.'} Verifica que la ruta backend exista.</p>`;
+      return;
+    }
+
+    let html = `
+      <div style="background:linear-gradient(135deg,#0b3d6e,#1a6b2e);color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px">
+        <div style="font-size:1.6rem;font-weight:700;font-family:'Playfair Display',serif">${data.puntajeGlobal}/100</div>
+        <div style="opacity:0.85;font-size:0.88rem">${data.simulacroNombre}</div>
+      </div>`;
+
+    (data.areas||[]).forEach(area => {
+      html += `<div style="font-weight:700;color:#0b3d6e;background:#eff6ff;padding:7px 12px;border-radius:8px;margin:12px 0 8px;border-left:4px solid #0b3d6e">📚 ${area.nombre}</div>`;
+      (area.preguntas||[]).forEach(preg => {
+        const cls = preg.sinResponder ? 'sinresp' : preg.esCorrecta ? 'correcta' : 'incorrecta';
+        const icon = preg.sinResponder ? '—' : preg.esCorrecta ? '✅' : '❌';
+        html += `<div class="det-preg-card ${cls}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+            <strong style="font-size:0.85rem;color:#0b3d6e">Pregunta ${preg.numero}</strong>
+            <span style="font-size:1.1rem">${icon}</span>
+          </div>
+          <div style="font-size:0.84rem;color:#334155;margin-bottom:8px;border-left:3px solid #cbd5e1;padding-left:8px">${(preg.texto||'').length>100?(preg.texto||'').slice(0,100)+'…':(preg.texto||'')}</div>
+          
+          <div class="det-op-row">
+            <span style="font-size:0.78rem;color:#64748b;min-width:110px">Respuesta alumno:</span>
+            ${preg.sinResponder
+              ? '<span style="color:#94a3b8;font-size:0.85rem">No respondió</span>'
+              : `<div class="det-op-badge" style="background:${preg.esCorrecta?'#16a34a':'#dc2626'}">${preg.letraMarcada}</div>
+                 <span style="font-size:0.85rem;margin-left:4px">${(preg.opciones||[])[preg.respuestaMarcada]||''}</span>`}
+          </div>
+          <div class="det-op-row" style="margin-top:4px">
+            <span style="font-size:0.78rem;color:#64748b;min-width:110px">Correcta:</span>
+            <div class="det-op-badge" style="background:#16a34a">${preg.letraCorrecta}</div>
+            <span style="font-size:0.85rem;margin-left:4px">${(preg.opciones||[])[preg.respuestaCorrecta]||''}</span>
+          </div>
+        </div>`;
+      });
+    });
+
+    document.getElementById('modalPxPAdminContent').innerHTML = html;
+  } catch(e) {
+    document.getElementById('modalPxPAdminContent').innerHTML = '<p style="color:#dc2626;padding:20px;text-align:center">Error de conexión con el servidor.</p>';
+  }
+}
+
+// ── ELIMINAR ESTUDIANTE ──────────────────────────────────────────────────────
+async function eliminarEstudiante(doc, nombre) {
+  if (!confirm(`⚠️ ¿Eliminar al estudiante "${nombre}" (${doc})?\n\nSus resultados también se eliminarán. Esta acción NO se puede deshacer.`)) return;
+  const res = await fetch(`/admin/usuarios/${doc}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) {
+    showMsg('usuariosMsg', `✅ Estudiante "${nombre}" eliminado correctamente.`, 'success');
+    loadUsuarios();
+  } else {
+    showMsg('usuariosMsg', '❌ Error al eliminar: ' + (data.message || ''), 'error');
+  }
+}
+
+// ── RESET CONTRASEÑA ─────────────────────────────────────────────────────────
+function abrirResetContrasena(doc, nombre) {
+  document.getElementById('resetDoc').value = doc;
+  document.getElementById('resetNombre').textContent = nombre;
+  document.getElementById('resetDocLabel').textContent = doc;
+  document.getElementById('nuevaContrasena').value = '';
+  document.getElementById('confirmarContrasena').value = '';
+  document.getElementById('resetMsg').style.display = 'none';
+  document.getElementById('modalResetContrasena').classList.add('open');
+}
+
+async function guardarResetContrasena() {
+  const doc = document.getElementById('resetDoc').value;
+  const nueva = document.getElementById('nuevaContrasena').value.trim();
+  const confirmar = document.getElementById('confirmarContrasena').value.trim();
+  const msgEl = document.getElementById('resetMsg');
+
+  if (!nueva) { msgEl.textContent='⚠️ Ingresa la nueva contraseña'; msgEl.className='msg error'; msgEl.style.display='block'; return; }
+  if (nueva.length < 4) { msgEl.textContent='⚠️ La contraseña debe tener al menos 4 caracteres'; msgEl.className='msg error'; msgEl.style.display='block'; return; }
+  if (nueva !== confirmar) { msgEl.textContent='⚠️ Las contraseñas no coinciden'; msgEl.className='msg error'; msgEl.style.display='block'; return; }
+
+  const res = await fetch(`/admin/usuarios/${doc}/reset-contrasena`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nuevaContrasena: nueva })
+  });
+  const data = await res.json();
+  if (data.success) {
+    msgEl.textContent = '✅ Contraseña actualizada correctamente';
+    msgEl.className = 'msg success';
+    msgEl.style.display = 'block';
+    setTimeout(() => closeModal('modalResetContrasena'), 2000);
+  } else {
+    msgEl.textContent = '❌ Error: ' + (data.message || 'No se pudo actualizar');
+    msgEl.className = 'msg error';
+    msgEl.style.display = 'block';
+  }
+}
+
+// ──────────────────────────────────────────────────
+// ESTADÍSTICAS GENERALES POR PREGUNTA Y GRADOS
+// ──────────────────────────────────────────────────
+const LETRAS_COLORES = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2'];
+
+async function cargarListaSimulacros() {
+  const res = await fetch('/admin/estadisticas/lista-simulacros');
+  const data = await res.json();
+  const sel = document.getElementById('selectSimEstadisticas');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Selecciona simulacro —</option>' +
+    (data.simulacros||[]).map(s => `<option value="${s.id}">${s.nombre} (${s.totalPreguntas} pregs)</option>`).join('');
+}
+
+async function abrirEstadisticas() {
+  const simId = document.getElementById('selectSimEstadisticas').value;
+  if (!simId) return alert('Selecciona un simulacro primero.');
+  document.getElementById('modalEstadisticasContent').innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8">⏳ Cargando estadísticas...</div>';
+  document.getElementById('modalEstadisticas').classList.add('open');
+
+  const grado = gradoFiltro === 'todos' ? '' : gradoFiltro;
+  const url = `/admin/estadisticas/simulacro/${simId}${grado ? '?grado='+grado : ''}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.success) {
+    document.getElementById('modalEstadisticasContent').innerHTML = '<p style="color:#dc2626;padding:20px">Error al cargar estadísticas.</p>';
+    return;
+  }
+  renderEstadisticas(data);
+}
+
+function generarComparativaGrados(simId, isPrint = false) {
+  const resSim = allResultados.filter(r => r.simulacroId === simId);
+  if(resSim.length === 0) return '';
+  const grados = [...new Set(resSim.map(r => r.grado))].sort();
+  if(grados.length <= 1) return ''; 
+
+  const areasNombres = [];
+  resSim.forEach(r => {
+    (r.resultadoAreas || []).forEach(a => {
+      if(!areasNombres.includes(a.area)) areasNombres.push(a.area);
+    });
+  });
+
+  let html = `<div style="${isPrint ? 'margin-bottom:24px' : 'background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:20px;margin-bottom:24px'}">
+    <h4 style="color:${isPrint ? '#0b3d6e' : 'var(--azul)'};margin-bottom:16px;font-size:1.1rem;border-bottom:2px solid #e2e8f0;padding-bottom:8px">📈 Comparativa de Promedios por Grado</h4>`;
+
+  html += renderBarChartGrado('Puntaje Global (Escala ICFES)', grados, resSim, true, isPrint);
+  areasNombres.forEach(area => {
+    html += renderBarChartGrado(area, grados, resSim, false, isPrint);
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function renderBarChartGrado(titulo, grados, resSim, isGlobal, isPrint) {
+  let html = `<div style="margin-bottom:18px;page-break-inside:avoid;">
+    <strong style="color:#334155;font-size:0.95rem;display:block;margin-bottom:8px">${titulo}</strong>`;
+
+  grados.forEach(grado => {
+    const resGrado = resSim.filter(r => r.grado === grado);
+    let suma = 0, count = 0;
+    if (isGlobal) {
+      resGrado.forEach(r => { suma += r.puntajeGlobal; count++; });
+    } else {
+      resGrado.forEach(r => {
+        const a = (r.resultadoAreas || []).find(x => x.area === titulo);
+        if (a) { suma += a.puntaje; count++; }
+      });
+    }
+    const prom = count > 0 ? Math.round(suma / count) : 0;
+    const bColor = prom >= 80 ? '#16a34a' : prom >= 65 ? '#2563eb' : prom >= 35 ? '#d97706' : '#dc2626';
+
+    html += `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="width:45px;font-size:0.85rem;font-weight:700;color:${isPrint ? '#0b3d6e' : 'var(--azul)'}">${grado}</div>
+        <div style="flex:1;height:14px;background:#e2e8f0;border-radius:7px;overflow:hidden">
+          <div style="width:${prom}%;height:100%;background:${bColor};border-radius:7px"></div>
+        </div>
+        <div style="width:40px;text-align:right;font-size:0.85rem;font-weight:800;color:${bColor}">${prom}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderEstadisticas(data) {
+  const grahoLabel = data.grado === 'todos' ? 'Todos los grados' : `Grado ${data.grado}`;
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h4 style="color:var(--azul);font-size:1.1rem;margin-bottom:4px">${data.simulacro.nombre}</h4>
+        <div style="color:#64748b;font-size:0.85rem">📚 ${grahoLabel} · 👥 ${data.totalEstudiantes} estudiante(s)</div>
+      </div>
+      <button class="btn btn-primary" onclick="descargarPDFEstadisticas()" style="background:#f5c518;color:#0b3d6e;font-weight:700">
+        ⬇️ Descargar PDF
+      </button>
+    </div>`;
+
+  if (data.grado === 'todos') {
+    html += generarComparativaGrados(data.simulacro.id, false);
+  }
+
+  (data.areas||[]).forEach(area => {
+    html += `<div style="margin-bottom:24px"><div style="background:#eff6ff;color:var(--azul);padding:8px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;border-left:4px solid var(--azul)">📚 ${area.nombre}</div>`;
+    (area.preguntas||[]).forEach(preg => {
+      const totalResp = preg.totalEstudiantes - preg.sinResponder;
+      html += `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:12px">
+        <div style="font-weight:700;color:var(--azul);font-size:0.9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+          Pregunta ${preg.numero}
+          <span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:12px;font-size:0.75rem">✅ Correcta: ${preg.letraCorrecta}</span>
+          ${preg.sinResponder>0?`<span style="font-size:0.75rem;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:12px">⚠️ ${preg.sinResponder} sin resp.</span>`:''}
+        </div>
+        <div style="font-size:0.85rem;color:#334155;margin-bottom:12px;border-left:3px solid #cbd5e1;padding-left:10px">${preg.texto.length>140?preg.texto.slice(0,140)+'…':preg.texto}</div>`;
+      
+      (preg.opciones||[]).forEach((op, i) => {
+        const esCorr = i === preg.respuestaCorrecta;
+        const color = LETRAS_COLORES[i] || '#94a3b8';
+        const pct = op.porcentaje;
+        html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.8rem;background:${esCorr?'#16a34a':color};flex-shrink:0">${op.letra}</div>
+          <div style="flex:1;height:12px;background:#e2e8f0;border-radius:6px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${esCorr?'#16a34a':color};border-radius:6px"></div>
+          </div>
+          <div style="font-size:0.8rem;color:#475569;min-width:60px;text-align:right"><strong>${op.conteo}</strong> (${pct}%)</div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  window._estDataActual = data;
+  document.getElementById('modalEstadisticasContent').innerHTML = html;
+}
+
+function descargarPDFEstadisticas() {
+  const data = window._estDataActual;
+  if (!data) return;
+
+  const grahoLabel = data.grado === 'todos' ? 'Todos los grados' : `Grado ${data.grado}`;
+  const letrasColores = LETRAS_COLORES;
+
+  let body = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Estadísticas – ${data.simulacro.nombre}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+    body{font-family:Arial,sans-serif;color:#1e293b;padding:24px;font-size:12px;}
+    h1{font-size:18px;color:#0b3d6e;margin-bottom:4px;}
+    .sub{color:#64748b;margin-bottom:20px;font-size:11px;}
+    .area-title{background:#0b3d6e;color:#fff;padding:7px 12px;border-radius:6px;margin:18px 0 10px;font-weight:700;font-size:13px;}
+    .preg{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:10px;page-break-inside:avoid;}
+    .preg-num{font-weight:700;color:#0b3d6e;font-size:11px;margin-bottom:4px;}
+    .preg-texto{font-size:11px;color:#334155;margin-bottom:8px;border-left:3px solid #cbd5e1;padding-left:8px;}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .letra-c{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:10px;flex-shrink:0;}
+    .bar-outer{flex:1;height:12px;background:#e2e8f0;border-radius:6px;overflow:hidden;}
+    .bar-inner{height:100%;border-radius:6px;}
+    .bar-label{font-size:10px;min-width:52px;text-align:right;color:#334155;font-weight:600;}
+    .clave-badge{display:inline-block;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:6px;}
+    @media print{body{padding:12px;}@page{margin:15mm;}}
+  </style></head><body>
+  <h1>📊 Estadísticas – ${data.simulacro.nombre}</h1>
+  <div class="sub">${grahoLabel} · ${data.totalEstudiantes} estudiante(s) · Generado: ${new Date().toLocaleString('es-CO')}</div>`;
+
+  if (data.grado === 'todos') {
+    body += generarComparativaGrados(data.simulacro.id, true);
+  }
+
+  (data.areas||[]).forEach(area => {
+    body += `<div class="area-title">📚 ${area.nombre}</div>`;
+    (area.preguntas||[]).forEach(preg => {
+      body += `<div class="preg">
+        <div class="preg-num">Pregunta ${preg.numero} <span class="clave-badge">Clave: ${preg.letraCorrecta}</span>${preg.sinResponder>0?` <span style="color:#94a3b8;font-size:10px">(${preg.sinResponder} sin resp.)</span>`:''}</div>
+        <div class="preg-texto">${preg.texto.length>140?preg.texto.slice(0,140)+'…':preg.texto}</div>`;
+      (preg.opciones||[]).forEach((op, i) => {
+        const esCorr = i === preg.respuestaCorrecta;
+        const color = esCorr ? '#16a34a' : (letrasColores[i]||'#94a3b8');
+        body += `<div class="bar-row">
+          <div class="letra-c" style="background:${color}">${op.letra}</div>
+          <div class="bar-outer"><div class="bar-inner" style="width:${op.porcentaje}%;background:${color}"></div></div>
+          <div class="bar-label">${op.conteo} · ${op.porcentaje}%</div>
+        </div>`;
+      });
+      body += `</div>`;
+    });
+  });
+  body += `</body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(body);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent=text; el.className=`msg ${type}`; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 4000);
+}
+
+// ═══════════════════════════════════════════════════════
+// SIMULACRO COMPLETO BUILDER - v4 (Modificado hasta la H)
+// ═══════════════════════════════════════════════════════
+let scAreas = [];
+
+function scAgregarArea() {
+  const nombre = prompt('Nombre del área:');
+  if (!nombre || !nombre.trim()) return;
+  if (scAreas.find(a=>a.nombre===nombre.trim())) return alert('Esa área ya existe.');
+  scAreas.push({ nombre: nombre.trim(), preguntas: [] });
+  scRenderAreas();
+}
+function scAgregarAreaRapida(nombre) {
+  if (scAreas.find(a=>a.nombre===nombre)) { alert(`El área "${nombre}" ya fue agregada.`); return; }
+  scAreas.push({ nombre, preguntas: [] });
+  scRenderAreas();
+}
+function scEliminarArea(aIdx) {
+  if (!confirm(`¿Eliminar el área "${scAreas[aIdx].nombre}"?`)) return;
+  scAreas.splice(aIdx,1);
+  scRenderAreas();
+}
+
+function scAgregarPregunta(aIdx) {
+  scAreas[aIdx].preguntas.push({ enunciado:'', texto:'', imagen:null, opciones:['','','',''], imagenesOpciones:[], respuestaCorrecta:null });
+  scRenderPreguntas(aIdx);
+  setTimeout(()=>{
+    const cards = document.querySelectorAll(`#scPregsArea-${aIdx} .sc-preg-card`);
+    if(cards.length) cards[cards.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
+  },120);
+}
+function scEliminarPregunta(aIdx,pIdx) {
+  if(!confirm('¿Eliminar esta pregunta?')) return;
+  scAreas[aIdx].preguntas.splice(pIdx,1);
+  scRenderPreguntas(aIdx);
+}
+function scMoverPregunta(aIdx,pIdx,dir) {
+  const arr=scAreas[aIdx].preguntas, ni=pIdx+dir;
+  if(ni<0||ni>=arr.length) return;
+  [arr[pIdx],arr[ni]]=[arr[ni],arr[pIdx]];
+  scRenderPreguntas(aIdx);
+}
+function scAgregarOpcion(aIdx,pIdx) {
+  if(scAreas[aIdx].preguntas[pIdx].opciones.length>=8) return alert('Máximo 8 opciones.');
+  scAreas[aIdx].preguntas[pIdx].opciones.push('');
+  scRenderPreguntas(aIdx);
+}
+function scQuitarOpcion(aIdx,pIdx) {
+  const ops = scAreas[aIdx].preguntas[pIdx].opciones;
+  if(ops.length<=2) return alert('Mínimo 2 opciones.');
+  const clave = scAreas[aIdx].preguntas[pIdx].respuestaCorrecta;
+  if(clave===ops.length-1) scAreas[aIdx].preguntas[pIdx].respuestaCorrecta=null;
+  ops.pop();
+  scRenderPreguntas(aIdx);
+}
+function scSetClave(aIdx,pIdx,oIdx) {
+  scAreas[aIdx].preguntas[pIdx].respuestaCorrecta=oIdx;
+}
+function scSetClaveYColores(aIdx,pIdx,oIdx) {
+  scAreas[aIdx].preguntas[pIdx].respuestaCorrecta=oIdx;
+  scRenderPreguntas(aIdx);
+}
+
+async function scSubirImgPregunta(aIdx,pIdx,input) {
+  const file=input.files[0]; if(!file) return;
+  const fd=new FormData(); fd.append('imagen',file);
+  const s=document.getElementById(`scImgSt-${aIdx}-${pIdx}`);
+  if(s) s.textContent='⏳ Subiendo...';
+  const r=await fetch('/admin/upload-imagen',{method:'POST',body:fd});
+  const d=await r.json();
+  if(d.success){ scAreas[aIdx].preguntas[pIdx].imagen=d.url; scRenderPreguntas(aIdx); }
+  else if(s) s.textContent='❌ Error';
+}
+function scQuitarImgPregunta(aIdx,pIdx) {
+  scAreas[aIdx].preguntas[pIdx].imagen=null; scRenderPreguntas(aIdx);
+}
+async function scSubirImgOpcion(aIdx,pIdx,oIdx,input) {
+  const file=input.files[0]; if(!file) return;
+  const fd=new FormData(); fd.append('imagen',file);
+  const s=document.getElementById(`scOpImgSt-${aIdx}-${pIdx}-${oIdx}`);
+  if(s) s.textContent='⏳';
+  const r=await fetch('/admin/upload-imagen',{method:'POST',body:fd});
+  const d=await r.json();
+  if(d.success){
+    if(!scAreas[aIdx].preguntas[pIdx].imagenesOpciones) scAreas[aIdx].preguntas[pIdx].imagenesOpciones=[];
+    scAreas[aIdx].preguntas[pIdx].imagenesOpciones[oIdx]=d.url;
+    if(s) s.textContent='🖼✅';
+  } else if(s) s.textContent='❌';
+}
+
+function scRenderAreas() {
+  const cont=document.getElementById('scAreasContainer');
+  if(scAreas.length===0){
+    cont.innerHTML='<div style="text-align:center;padding:28px;color:#94a3b8;background:#f8fafc;border-radius:12px;border:2px dashed #e2e8f0">👆 Agrega un área usando los botones de arriba</div>';
+    document.getElementById('scResumen').style.display='none';
+    return;
+  }
+  cont.innerHTML = scAreas.map((area,aIdx) => {
+    const peso=ICFES_PESOS[area.nombre];
+    return `<div style="border:2px solid #e2e8f0;border-radius:14px;margin-bottom:20px;overflow:hidden" id="scArea-${aIdx}">
+      <div style="background:linear-gradient(135deg,#0b3d6e,#1a6b2e);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="color:#fff;font-weight:700;font-size:1rem">📚 ${area.nombre}</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:0.78rem">${area.preguntas.length} pregunta${area.preguntas.length!==1?'s':''} ${peso?'· Peso ICFES: '+peso+'%':''}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="scAgregarPregunta(${aIdx})">➕ Pregunta</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b" onclick="scEliminarArea(${aIdx})">🗑 Área</button>
+        </div>
+      </div>
+      <div style="padding:12px" id="scPregsArea-${aIdx}">
+        <div style="text-align:center;padding:20px;color:#94a3b8;font-size:0.88rem">Sin preguntas. Haz clic en ➕ Pregunta.</div>
+      </div>
+    </div>`;
+  }).join('');
+  scAreas.forEach((_,i) => scRenderPreguntas(i));
+  scActualizarResumen();
+}
+
+function scRenderPreguntas(aIdx) {
+  const cont = document.getElementById(`scPregsArea-${aIdx}`);
+  if(!cont) return;
+  const area = scAreas[aIdx];
+  const letras=['A','B','C','D','E','F','G','H'];
+
+  if(area.preguntas.length===0){
+    cont.innerHTML='<div style="text-align:center;padding:20px;color:#94a3b8;font-size:0.88rem">Sin preguntas. Haz clic en ➕ Pregunta.</div>';
+    scActualizarResumen();
+    return;
+  }
+
+  cont.innerHTML = area.preguntas.map((p,pIdx) => {
+    const claveOk = p.respuestaCorrecta!==null && p.respuestaCorrecta!==undefined;
+    return `<div class="sc-preg-card" style="background:#f8fafc;border:2px solid ${claveOk?'#86efac':'#e2e8f0'};border-radius:12px;padding:16px;margin-bottom:12px" id="scPregCard-${aIdx}-${pIdx}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="background:#0b3d6e;color:#f5c518;padding:3px 12px;border-radius:20px;font-size:0.78rem;font-weight:700">Pregunta ${pIdx+1}</span>
+        <div style="display:flex;gap:5px">
+          ${pIdx>0?`<button class="btn btn-sm" style="background:#f1f5f9;color:#475569;padding:4px 8px" onclick="scMoverPregunta(${aIdx},${pIdx},-1)">↑</button>`:''}
+          ${pIdx<area.preguntas.length-1?`<button class="btn btn-sm" style="background:#f1f5f9;color:#475569;padding:4px 8px" onclick="scMoverPregunta(${aIdx},${pIdx},1)">↓</button>`:''}
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b" onclick="scEliminarPregunta(${aIdx},${pIdx})">🗑</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-size:0.78rem;font-weight:700;color:#0b3d6e;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px">Pregunta *</label>
+        <textarea rows="3" placeholder="Escribe la pregunta aquí..."
+          style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:9px;font-family:Barlow,sans-serif;font-size:0.93rem;resize:vertical;outline:none;background:#fff"
+          onchange="scAreas[${aIdx}].preguntas[${pIdx}].texto=this.value">${p.texto||''}</textarea>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="font-size:0.78rem;font-weight:700;color:#0b3d6e;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">📷 Imagen (opcional)</label>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <label style="display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:#eff6ff;border:2px dashed #93c5fd;border-radius:8px;cursor:pointer;font-size:0.82rem;color:#1e40af;font-weight:600">
+            📁 Subir imagen
+            <input type="file" accept="image/*" style="display:none" onchange="scSubirImgPregunta(${aIdx},${pIdx},this)">
+          </label>
+          ${p.imagen?`<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b" onclick="scQuitarImgPregunta(${aIdx},${pIdx})">✕ Quitar</button>`:''}
+          <span id="scImgSt-${aIdx}-${pIdx}" style="font-size:0.8rem;color:#94a3b8">${p.imagen?'✅ Imagen cargada':'Sin imagen'}</span>
+        </div>
+        ${p.imagen?`<img src="${p.imagen}" style="max-width:100%;max-height:180px;border-radius:8px;border:2px solid #e2e8f0;margin-top:8px;object-fit:contain;display:block">`:''}
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="font-size:0.78rem;font-weight:700;color:#0b3d6e;text-transform:uppercase;letter-spacing:0.5px">Opciones de Respuesta *</label>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm" style="background:#d1fae5;color:#065f46;padding:4px 10px;font-size:0.78rem" onclick="scAgregarOpcion(${aIdx},${pIdx})" ${p.opciones.length>=8?'disabled':''}>+ Opción</button>
+            <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;padding:4px 10px;font-size:0.78rem" onclick="scQuitarOpcion(${aIdx},${pIdx})" ${p.opciones.length<=2?'disabled':''}>− Opción</button>
+          </div>
+        </div>
+        ${p.opciones.map((op,oIdx)=>{
+          const esClave = p.respuestaCorrecta===oIdx;
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <div style="width:30px;height:30px;border-radius:50%;background:${esClave?'#16a34a':'#0b3d6e'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0">${letras[oIdx]}</div>
+            <input type="text" value="${op||''}" placeholder="Opción ${letras[oIdx]}..."
+              style="flex:1;padding:9px 12px;border:2px solid ${esClave?'#86efac':'#e2e8f0'};border-radius:9px;font-family:Barlow,sans-serif;font-size:0.9rem;outline:none;background:${esClave?'#f0fdf4':'#fff'}"
+              onchange="scAreas[${aIdx}].preguntas[${pIdx}].opciones[${oIdx}]=this.value">
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div style="background:${claveOk?'#f0fdf4':'#fefce8'};border:2px solid ${claveOk?'#86efac':'#fde68a'};border-radius:10px;padding:12px 14px">
+        <label style="font-size:0.8rem;font-weight:700;color:${claveOk?'#166534':'#92400e'};display:block;margin-bottom:8px">🔑 Respuesta Correcta (Clave) *</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${p.opciones.map((_,oIdx)=>`
+          <button type="button" onclick="scSetClaveYColores(${aIdx},${pIdx},${oIdx})"
+            style="flex:1;min-width:40px;padding:9px 4px;border-radius:9px;border:2px solid ${p.respuestaCorrecta===oIdx?'#16a34a':'#e2e8f0'};background:${p.respuestaCorrecta===oIdx?'#16a34a':'#fff'};color:${p.respuestaCorrecta===oIdx?'#fff':'#64748b'};font-weight:800;font-size:1rem;cursor:pointer;">
+            ${letras[oIdx]}
+          </button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  scActualizarResumen();
+}
+
+function scActualizarResumen() {
+  const r=document.getElementById('scResumen'), rc=document.getElementById('scResumenContent');
+  if(scAreas.length===0){r.style.display='none';return;}
+  r.style.display='block';
+  const total=scAreas.reduce((a,ar)=>a+ar.preguntas.length,0);
+  rc.innerHTML=scAreas.map(ar=>{
+    const info=ICFES_PESOS[ar.nombre];
+    const sinClave=ar.preguntas.filter(p=>p.respuestaCorrecta===null||p.respuestaCorrecta===undefined).length;
+    return `<div style="background:#fff;padding:10px 12px;border-radius:8px;border:1px solid #86efac">
+      <div style="font-weight:700;color:#166534">${ar.nombre}</div>
+      <div style="font-size:0.85rem">${ar.preguntas.length} pregs</div>
+      <div style="font-size:0.78rem;color:${sinClave>0?'#b45309':'#16a34a'}">${sinClave>0?`⚠️ ${sinClave} sin clave`:'✅ Todo OK'}</div>
+    </div>`;
+  }).join('')+`<div style="background:#0b3d6e;color:#fff;padding:10px 12px;border-radius:8px;grid-column:1/-1;font-weight:700">Total: ${total} preguntas</div>`;
+}
+
+function scVistaPreviaResumen(){ scActualizarResumen(); document.getElementById('scResumen').scrollIntoView({behavior:'smooth'}); }
+
+async function scGuardarSimulacro() {
+  const nombre=document.getElementById('scNombre').value.trim();
+  const duracion=document.getElementById('scDuracion').value;
+  const descripcion=document.getElementById('scDesc').value.trim();
+  if(!nombre) return showMsg('scMsg','❌ Escribe el nombre del simulacro','error');
+  if(scAreas.length===0) return showMsg('scMsg','❌ Agrega al menos un área','error');
+  
+  document.querySelectorAll('.sc-preg-card').forEach(card => {
+    const parts = card.id.replace('scPregCard-','').split('-');
+    if(parts.length<2) return;
+    const aIdx=parseInt(parts[0]), pIdx=parseInt(parts[1]);
+    const p = scAreas[aIdx] && scAreas[aIdx].preguntas[pIdx];
+    if(!p) return;
+    const tas = card.querySelectorAll('textarea');
+    if(tas[0]) p.texto = tas[0].value;
+    card.querySelectorAll('input[type=text]').forEach((inp,oi)=>{
+      if(!p.opciones) p.opciones=['','','',''];
+      if(oi<p.opciones.length) p.opciones[oi]=inp.value;
+    });
+  });
+  
+  let errores=[];
+  scAreas.forEach((area,aIdx)=>{
+    area.preguntas.forEach((p,pIdx)=>{
+      if((!p.texto||!p.texto.trim())&&(!p.enunciado||!p.enunciado.trim())) errores.push(`Área "${area.nombre}" P${pIdx+1}: falta la pregunta`);
+      if((p.opciones||[]).filter(o=>o&&o.trim()).length<2) errores.push(`Área "${area.nombre}" P${pIdx+1}: necesita ≥2 opciones`);
+      if(p.respuestaCorrecta===null||p.respuestaCorrecta===undefined||p.respuestaCorrecta==='') errores.push(`Área "${area.nombre}" P${pIdx+1}: falta la clave`);
+    });
+  });
+  if(errores.length>0) return showMsg('scMsg','❌ '+errores.slice(0,3).join(' | ')+(errores.length>3?` +${errores.length-3} más`:''),'error');
+  
+  showMsg('scMsg','⏳ Guardando...','success');
+  const areasPayload=scAreas.map(area=>({
+    nombre:area.nombre, pdfPath:area.pdfPath||null,
+    preguntas:area.preguntas.map(p=>({
+      enunciado:p.enunciado||'', texto:p.texto||p.enunciado||'', imagen:p.imagen||null,
+      opciones:(p.opciones||[]).map(o=>o||''),
+      imagenesOpciones:p.imagenesOpciones||[],
+      respuestaCorrecta:p.respuestaCorrecta
+    }))
+  }));
+  const res=await fetch('/admin/simulacros',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,duracion,descripcion,areas:areasPayload,tipo:'completo'})});
+  const data=await res.json();
+  if(data.success){
+    showMsg('scMsg',`✅ Simulacro guardado correctamente.`,'success');
+    scAreas=[]; scRenderAreas();
+    document.getElementById('scNombre').value='';
+    document.getElementById('scDesc').value='';
+    loadSimulacros();
+  } else { showMsg('scMsg','❌ '+data.message,'error'); }
+}
+
+function buscarEstudiante() {
+  const termino = document.getElementById('buscadorEstudiantes').value.toLowerCase();
+  const filas = document.querySelectorAll('#usuariosBody tr');
+  filas.forEach(fila => {
+    if (fila.cells.length === 1) return;
+    const nombre = fila.cells[0] ? fila.cells[0].textContent.toLowerCase() : '';
+    const doc = fila.cells[1] ? fila.cells[1].textContent.toLowerCase() : '';
+    fila.style.display = (nombre.includes(termino) || doc.includes(termino)) ? '' : 'none';
+  });
+}
+
+// Init
+loadResumen();
+</script></body></html>
