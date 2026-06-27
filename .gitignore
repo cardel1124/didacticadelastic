@@ -1,0 +1,24 @@
+# Dependencias de Node.js (se instalan con npm install)
+node_modules/
+
+# Variables de entorno con datos sensibles — nunca se suben
+.env
+*.env.local
+
+# Datos reales de estudiantes generados al usar el simulacro
+herramientas/simulacro-icfes/data/users.json
+herramientas/simulacro-icfes/data/resultados.json
+herramientas/simulacro-icfes/data/simulacros.json
+herramientas/simulacro-icfes/data/progreso/*
+!herramientas/simulacro-icfes/data/progreso/.gitkeep
+herramientas/simulacro-icfes/public/uploads/imgs/*
+herramientas/simulacro-icfes/public/uploads/pdfs/*
+herramientas/simulacro-icfes/public/uploads/docs/*
+!herramientas/simulacro-icfes/public/uploads/imgs/.gitkeep
+!herramientas/simulacro-icfes/public/uploads/pdfs/.gitkeep
+!herramientas/simulacro-icfes/public/uploads/docs/.gitkeep
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.log

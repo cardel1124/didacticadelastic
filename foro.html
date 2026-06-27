@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foro Educativo Docentes - TIC y Educación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        #fullscreen-button {
+            background-color: #007bff;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 10px 15px;
+            position: fixed;
+            right: 15px;
+            top: 15px;
+            transition: background-color 0.3s, transform 0.2s;
+            z-index: 1000;
+        }
+
+        #fullscreen-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 35px 25px;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .quote-section {
+            background-color: #e0f2f7;
+            max-width: 800px;
+            margin: 0 auto 35px;
+            padding: 25px;
+            text-align: center;
+            border-radius: 12px;
+        }
+
+        .quote-text {
+            color: #00796b;
+            font-size: 1.4em;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .quote-author {
+            color: #004d40;
+            font-size: 0.9em;
+            font-style: italic;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .image-section {
+            text-align: center;
+            margin: 40px 0 50px;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .questions-section {
+            border-radius: 15px;
+            border: 1px solid #ffd600;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            background-color: #fefde7;
+            margin-bottom: 40px;
+        }
+
+        .questions-section h3 {
+            color: #ff6f00;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .questions-section > p {
+            color: #555555;
+            font-size: 1.25em;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .questions-section ol {
+            color: #333333;
+            list-style-type: decimal;
+            margin: 0 auto;
+            max-width: 850px;
+            padding-left: 35px;
+        }
+
+        .questions-section li {
+            color: #444444;
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .reminder-box {
+            background-color: #ffebee;
+            border-radius: 12px;
+            border: 2px dashed #ef9a9a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: #d32f2f;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 45px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .reminder-box strong:first-child {
+            color: #c62828;
+            font-size: 1.4em;
+        }
+
+        .deadline {
+            background-color: white;
+            color: red;
+            font-size: 1.1em;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .deadline strong {
+            text-decoration: underline;
+        }
+
+        .form-section {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-section h3 {
+            color: #1e3a8a;
+            margin-bottom: 25px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-download {
+            background: #059669;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .btn-download:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .participaciones {
+            margin-top: 40px;
+        }
+
+        .participaciones-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .participaciones h3 {
+            color: #1e3a8a;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .participacion {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .participacion:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+
+        .participacion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .participacion-nombre {
+            font-weight: 700;
+            color: #1e3a8a;
+            font-size: 1.05em;
+        }
+
+        .participacion-fecha {
+            color: #64748b;
+            font-size: 0.85em;
+        }
+
+        .participacion-texto {
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .respuestas-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .respuestas-section h4 {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .respuesta {
+            background: #f8fafc;
+            border-left: 3px solid #94a3b8;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .respuesta-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .respuesta-autor {
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.9em;
+        }
+
+        .respuesta-texto {
+            color: #64748b;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .form-respuesta {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .form-respuesta textarea {
+            margin-bottom: 10px;
+        }
+
+        .btn-responder {
+            background: #64748b;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-responder:hover {
+            background: #475569;
+        }
+
+        .btn-responder:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .no-participaciones {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .estadisticas {
+            background: #f1f5f9;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .estadistica {
+            text-align: center;
+        }
+
+        .estadistica-numero {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .estadistica-texto {
+            font-size: 0.85em;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .participacion-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .estadisticas {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" id="back-home-button" style="position:fixed;left:15px;top:15px;z-index:1000;background:#1B4B43;color:#fff;padding:10px 15px;border-radius:8px;font-size:0.9em;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);font-family:'Poppins',sans-serif;">← Volver al inicio</a>
+    <button id="fullscreen-button">Activar Pantalla Completa</button>
+
+    <div id="main-content-wrapper">
+        <div class="container">
+            <div class="header">
+                <h2>
+                    <strong>Te invito a participar en este foro de discusión, donde estaremos reflexionando a partir de la siguiente actividad:</strong>
+                </h2>
+                <p style="font-size: 1.1em; margin-top: 15px;">
+                    🔍 <strong>Observa detenidamente la imagen que se presenta y analiza esta frase clave:</strong>
+                </p>
+            </div>
+
+            <div class="content">
+                <div class="quote-section">
+                    <div class="quote-text">
+                        "Integrar las TIC en la educación no se trata solo de usar tecnología, sino de formar ciudadanos capaces de construir un mundo más justo, inclusivo y sostenible"
+                    </div>
+                    <div class="quote-author">
+                        UNESCO, 2021
+                    </div>
+                </div>
+
+                <div class="image-section">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh7yuYpZUzWQCP9EO2utwHigF3R0lc-5UHs_0k_nIGjKXYNtsU-AvNW3tNRS4gWaN8bXQzTLk673uKWahcVo8K7PLWrtHEMEbwEWAfg-XvFMJPv4TrrozCnhHFXLaXjrYGnFmJAr-FheV_59e5bpTdx2O2p9qSDOo0SrpEQataOTQS9kPShpo1fJIN9vqso/s1600/Imagen%20de%20WhatsApp%202025-07-08%20a%20las%2017.27.54_803fb492.jpg" 
+                         alt="Imagen sobre TIC en educación" 
+                         style="max-width: 600px;">
+                </div>
+
+                <div class="questions-section">
+                    <h3>¡Es tu Momento de Aportar!</h3>
+                    <p>
+                        Con base en tu observación y el análisis de la cita, te animamos a profundizar y compartir tus ideas en la sección de comentarios, respondiendo las siguientes preguntas:
+                    </p>
+
+                    <ol>
+                        <li>¿Qué mensaje clave te transmite esta imagen sobre el rol transformador del docente en la era digital?</li>
+                        <li>¿La simple integración de tecnología garantiza una mejor educación? ¿Cuáles son los factores esenciales más allá de la herramienta?</li>
+                        <li>Desde tu perspectiva docente, ¿Cómo podrías impulsar una educación más inclusiva y sostenible mediante el uso creativo y responsable de las TIC?</li>
+                        <li>Comparte un ejemplo práctico y original de cómo usarías una herramienta TIC para fomentar el pensamiento crítico, la inclusión o la sostenibilidad en tus estudiantes.</li>
+                    </ol>
+
+                    <div class="reminder-box">
+                        <strong>¡Importante!</strong> Debes realizar <strong style="text-decoration: underline;">DOS COMENTARIOS</strong> a las reflexiones de tus compañeros para completar la actividad.
+                    </div>
+                    
+                    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 20px; border-radius: 4px;">
+                        <h4 style="color: #1e40af; font-size: 1em; margin-bottom: 10px; font-weight: 600;">📊 Ponderación de la Actividad</h4>
+                        <ul style="list-style: none; margin-left: 0; padding-left: 0;">
+                            <li style="color: #1e40af; margin-bottom: 5px;">✅ Respuesta a las preguntas del foro: <strong>60%</strong></li>
+                            <li style="color: #1e40af; margin-bottom: 5px;">✅ Primer comentario a un compañero: <strong>20%</strong></li>
+                            <li style="color: #1e40af; margin-bottom: 5px;">✅ Segundo comentario a un compañero: <strong>20%</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="deadline">
+                        ¡Tienes hasta el <strong>Viernes 06 de Febrero de 2026</strong>!
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>✍️ Tu Participación</h3>
+                    <form id="foroForm">
+                        <div class="form-group">
+                            <label for="nombre">Nombres y apellidos completos: *</label>
+                            <input type="text" id="nombre" name="nombre" required placeholder="Escribe tu nombre completo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="respuesta">Tu reflexión: *</label>
+                            <textarea id="respuesta" name="respuesta" required 
+                                      placeholder="Desarrolla tu reflexión respondiendo a las preguntas planteadas de manera clara, personal y argumentada..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="btnEnviar">Publicar Participación</button>
+                    </form>
+                </div>
+
+                <div class="participaciones">
+                    <div class="estadisticas" id="estadisticas" style="display: none;">
+                        <div class="estadistica">
+                            <div class="estadistica-numero" id="total-participaciones">0</div>
+                            <div class="estadistica-texto">Participaciones</div>
+                        </div>
+                        <div class="estadistica">
+                            <div class="estadistica-numero" id="total-respuestas">0</div>
+                            <div class="estadistica-texto">Comentarios</div>
+                        </div>
+                    </div>
+
+                    <div class="participaciones-header">
+                        <h3>💬 Participaciones en Tiempo Real</h3>
+                        <button class="btn-download" id="btnDescargar" onclick="descargarReporte()" style="display: none;">
+                            📥 Descargar Reporte
+                        </button>
+                    </div>
+                    
+                    <div id="listaParticipaciones">
+                        <div class="loading">
+                            Conectando con la base de datos...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-ZgdeEHAKDDwU1Z73HdMlU16ECILIzBQ",
+            authDomain: "didactica-de-las-tic.firebaseapp.com",
+            projectId: "didactica-de-las-tic",
+            storageBucket: "didactica-de-las-tic.firebasestorage.app",
+            messagingSenderId: "100955695424",
+            appId: "1:100955695424:web:85c39d8d6bd160029cf2a5"
+        };
+
+        // Inicializar Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            console.log("Firebase conectado exitosamente");
+        } catch (error) {
+            console.error("Error al conectar con Firebase:", error);
+            document.getElementById('listaParticipaciones').innerHTML = `
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #92400e; margin-bottom: 10px;">⚠️ Error de conexión</h3>
+                    <p style="color: #78350f;">No se pudo conectar con Firebase. Verifica la configuración.</p>
+                </div>
+            `;
+        }
+
+        let participaciones = [];
+
+        function formatearFecha(timestamp) {
+            const fecha = timestamp ? timestamp.toDate() : new Date();
+            const opciones = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            return fecha.toLocaleDateString('es-ES', opciones);
+        }
+
+        // Escuchar cambios en tiempo real - colección "docentes"
+        if (db) {
+            db.collection('docentes')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((snapshot) => {
+                    participaciones = [];
+                    snapshot.forEach((doc) => {
+                        participaciones.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderizarParticipaciones();
+                    actualizarEstadisticas();
+                }, (error) => {
+                    console.error("Error al cargar participaciones:", error);
+                    document.getElementById('listaParticipaciones').innerHTML = `
+                        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 20px;">
+                            <h3 style="color: #92400e;">⚠️ Error</h3>
+                            <p style="color: #78350f;">Asegúrate de haber configurado las reglas de Firestore.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function actualizarEstadisticas() {
+            const totalParticipaciones = participaciones.length;
+            let totalRespuestas = 0;
+            
+            participaciones.forEach(p => {
+                if (p.respuestas) {
+                    totalRespuestas += p.respuestas.length;
+                }
+            });
+
+            document.getElementById('total-participaciones').textContent = totalParticipaciones;
+            document.getElementById('total-respuestas').textContent = totalRespuestas;
+
+            if (totalParticipaciones > 0) {
+                document.getElementById('estadisticas').style.display = 'flex';
+                document.getElementById('btnDescargar').style.display = 'block';
+            }
+        }
+
+        function renderizarParticipaciones() {
+            const lista = document.getElementById('listaParticipaciones');
+            
+            if (participaciones.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-participaciones">
+                        Aún no hay participaciones. ¡Sé el primero en compartir tu reflexión!
+                    </div>
+                `;
+                return;
+            }
+
+            lista.innerHTML = participaciones.map((p) => `
+                <div class="participacion">
+                    <div class="participacion-header">
+                        <span class="participacion-nombre">${p.nombre}</span>
+                        <span class="participacion-fecha">${formatearFecha(p.timestamp)}</span>
+                    </div>
+                    <div class="participacion-texto">
+                        ${p.respuesta}
+                    </div>
+                    
+                    ${p.respuestas && p.respuestas.length > 0 ? `
+                        <div class="respuestas-section">
+                            <h4>💬 Comentarios (${p.respuestas.length})</h4>
+                            ${p.respuestas.map(r => `
+                                <div class="respuesta">
+                                    <div class="respuesta-header">
+                                        <span class="respuesta-autor">${r.nombre}</span>
+                                    </div>
+                                    <div class="respuesta-texto">${r.texto}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="form-respuesta">
+                        <form onsubmit="agregarRespuesta(event, '${p.id}')">
+                            <div class="form-group">
+                                <input type="text" id="resp-nombre-${p.id}" placeholder="Tu nombre completo" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="resp-texto-${p.id}" placeholder="Escribe tu comentario..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn-responder">Comentar</button>
+                        </form>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function agregarRespuesta(event, participacionId) {
+            event.preventDefault();
+            
+            const nombre = document.getElementById(`resp-nombre-${participacionId}`).value;
+            const texto = document.getElementById(`resp-texto-${participacionId}`).value;
+            
+            const btn = event.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            
+            try {
+                const participacion = participaciones.find(p => p.id === participacionId);
+                const respuestas = participacion.respuestas || [];
+                
+                respuestas.push({
+                    nombre: nombre,
+                    texto: texto,
+                    fecha: new Date().toISOString()
+                });
+                
+                await db.collection('docentes').doc(participacionId).update({
+                    respuestas: respuestas
+                });
+                
+                event.target.reset();
+                alert('✅ Tu comentario ha sido publicado exitosamente.');
+            } catch (error) {
+                console.error("Error:", error);
+                alert('⚠️ Error al enviar el comentario. Intenta nuevamente.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Comentar';
+            }
+        }
+
+        document.getElementById('foroForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('btnEnviar');
+            btn.disabled = true;
+            btn.textContent = 'Publicando...';
+
+            try {
+                await db.collection('docentes').add({
+                    nombre: document.getElementById('nombre').value,
+                    respuesta: document.getElementById('respuesta').value,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    respuestas: []
+                });
+
+                this.reset();
+                alert('✅ Tu participación ha sido publicada exitosamente.');
+            } catch (error) {
+                console.error("Error:", error);
+                alert('⚠️ Error al publicar. Verifica tu conexión e intenta nuevamente.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Publicar Participación';
+            }
+        });
+
+        function descargarReporte() {
+            const participantes = {};
+            
+            participaciones.forEach(p => {
+                if (!participantes[p.nombre]) {
+                    participantes[p.nombre] = {
+                        nombre: p.nombre,
+                        participacionPrincipal: true,
+                        comentarios: []
+                    };
+                }
+            });
+            
+            participaciones.forEach(p => {
+                if (p.respuestas) {
+                    p.respuestas.forEach(r => {
+                        if (!participantes[r.nombre]) {
+                            participantes[r.nombre] = {
+                                nombre: r.nombre,
+                                participacionPrincipal: false,
+                                comentarios: []
+                            };
+                        }
+                        
+                        participantes[r.nombre].comentarios.push({
+                            fecha: r.fecha
+                        });
+                    });
+                }
+            });
+            
+            const participantesArray = Object.values(participantes);
+            participantesArray.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            
+            let reporte = 'REPORTE DE PARTICIPACIÓN - FORO EDUCATIVO TIC\n';
+            reporte += '='.repeat(80) + '\n\n';
+            
+            participantesArray.forEach((p, index) => {
+                reporte += `${index + 1}. ${p.nombre}\n`;
+                reporte += `   Participación principal: ${p.participacionPrincipal ? 'SÍ (60%)' : 'NO'}\n`;
+                reporte += `   Comentarios realizados: ${p.comentarios.length}/2\n`;
+                
+                if (p.comentarios.length > 0) {
+                    p.comentarios.forEach((c, i) => {
+                        reporte += `      ${i + 1}. Comentario realizado ${i < 2 ? '(20%)' : ''}\n`;
+                    });
+                }
+                
+                const cumpleCompleto = p.participacionPrincipal && p.comentarios.length >= 2;
+                reporte += `   Estado: ${cumpleCompleto ? '✓ COMPLETO (100%)' : '⚠ INCOMPLETO'}\n`;
+                reporte += '\n';
+            });
+            
+            // Resumen general
+            reporte += `\n${'='.repeat(80)}\n`;
+            reporte += 'RESUMEN GENERAL\n';
+            reporte += `${'='.repeat(80)}\n`;
+            reporte += `Total de participantes: ${participantesArray.length}\n`;
+            reporte += `Participaciones principales: ${participantesArray.filter(p => p.participacionPrincipal).length}\n`;
+            
+            let totalComentarios = 0;
+            participantesArray.forEach(p => totalComentarios += p.comentarios.length);
+            reporte += `Total de comentarios: ${totalComentarios}\n`;
+            
+            // Descargar archivo
+            const blob = new Blob([reporte], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Foro_TIC_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Función para pantalla completa
+        function toggleFullscreen() {
+            const elem = document.getElementById('main-content-wrapper');
+
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        document.getElementById('fullscreen-button').addEventListener('click', toggleFullscreen);
+
+        document.addEventListener('fullscreenchange', () => {
+            const button = document.getElementById('fullscreen-button');
+            button.textContent = document.fullscreenElement ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa';
+        });
+
+        document.addEventListener('mozfullscreenchange', () => {
+            const button = document.getElementById('fullscreen-button');
+            button.textContent = document.mozFullScreenElement ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa';
+        });
+
+        document.addEventListener('webkitfullscreenchange', () => {
+            const button = document.getElementById('fullscreen-button');
+            button.textContent = document.webkitFullscreenElement ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa';
+        });
+
+        document.addEventListener('msfullscreenchange', () => {
+            const button = document.getElementById('fullscreen-button');
+            button.textContent = document.msFullscreenElement ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa';
+        });
+    </script>
+</body>
+</html>

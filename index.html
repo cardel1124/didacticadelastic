@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Didáctica de las TIC · Educación para la Paz y CTS</title>
+<meta name="description" content="Curso de Didáctica de las TIC con enfoque en Educación para la Paz y Ciencia, Tecnología y Sociedad. Foro, juegos interactivos y recursos del curso.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --crema:        #FAF6EF;
+    --crema-suave:  #F1EADC;
+    --verde-rio:    #1B4B43;
+    --verde-claro:  #3F7A6C;
+    --terracota:    #C65D3B;
+    --azul-tic:     #2D5F8A;
+    --tinta:        #2B2620;
+    --tinta-suave:  #6B6256;
+    --linea:        #DED4C2;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--crema);
+    color:var(--tinta);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  a{color:inherit;text-decoration:none;}
+  :focus-visible{outline:3px solid var(--terracota); outline-offset:3px; border-radius:3px;}
+
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-0.01em;}
+
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--verde-claro);
+    display:flex;
+    align-items:center;
+    gap:0.6rem;
+  }
+  .eyebrow::before{
+    content:'';
+    width:18px;height:1px;
+    background:var(--verde-claro);
+    display:inline-block;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 6vw;}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(250,246,239,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--linea);
+  }
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1.1rem 6vw;
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.15rem;
+    display:flex;align-items:center;gap:0.55rem;
+  }
+  .brand-mark{
+    width:30px;height:30px;flex-shrink:0;
+  }
+  .navlinks{display:flex;gap:2.1rem;font-size:0.93rem;font-weight:500;}
+  .navlinks a{position:relative;padding:0.2rem 0;color:var(--tinta-suave);transition:color .2s;}
+  .navlinks a:hover{color:var(--verde-rio);}
+  .navlinks a::after{
+    content:'';position:absolute;left:0;bottom:-3px;width:0;height:2px;
+    background:var(--terracota);transition:width .25s;
+  }
+  .navlinks a:hover::after{width:100%;}
+  .nav-cta{
+    background:var(--verde-rio);color:var(--crema);
+    padding:0.55rem 1.2rem;border-radius:3px;
+    font-size:0.88rem;font-weight:600;
+    transition:background .2s;
+  }
+  .nav-cta:hover{background:var(--verde-claro);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:6.5rem 0 5rem;
+    overflow:hidden;
+  }
+  .hero .wrap{position:relative;z-index:2;}
+  .hero-grid{
+    display:grid;grid-template-columns:1.15fr 0.85fr;gap:3.5rem;align-items:end;
+  }
+  .hero h1{
+    font-size:clamp(2.4rem,4.6vw,4.1rem);
+    line-height:1.04;
+    margin:1.1rem 0 1.4rem;
+    color:var(--verde-rio);
+  }
+  .hero h1 em{
+    font-style:italic;color:var(--terracota);
+  }
+  .hero p.lead{
+    font-size:1.12rem;color:var(--tinta-suave);max-width:46ch;margin-bottom:2.1rem;
+  }
+  .hero-ctas{display:flex;gap:0.9rem;flex-wrap:wrap;}
+  .btn-primary{
+    background:var(--terracota);color:var(--crema);
+    padding:0.85rem 1.6rem;border-radius:3px;font-weight:600;font-size:0.95rem;
+    display:inline-flex;align-items:center;gap:0.5rem;
+    transition:transform .2s, background .2s;
+  }
+  .btn-primary:hover{background:#A84B2E;transform:translateY(-2px);}
+  .btn-ghost{
+    border:1.5px solid var(--verde-rio);color:var(--verde-rio);
+    padding:0.85rem 1.6rem;border-radius:3px;font-weight:600;font-size:0.95rem;
+    transition:background .2s, color .2s;
+  }
+  .btn-ghost:hover{background:var(--verde-rio);color:var(--crema);}
+
+  .hero-quote{
+    border-left:3px solid var(--verde-claro);
+    padding-left:1.3rem;
+    font-family:'Fraunces',serif;font-style:italic;
+    font-size:1.05rem;color:var(--verde-rio);
+    margin-bottom:0.6rem;
+  }
+  .hero-quote-src{
+    font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--tinta-suave);
+    letter-spacing:0.04em;
+  }
+
+  /* river signature line */
+  .river-svg{
+    position:absolute;
+    bottom:-10px;left:0;width:100%;height:140px;
+    z-index:1;pointer-events:none;
+  }
+
+  /* ---------- EJES / PILLARS ---------- */
+  .ejes{padding:4.5rem 0 2rem;}
+  .section-head{max-width:62ch;margin-bottom:3rem;}
+  .section-head h2{font-size:clamp(1.7rem,2.6vw,2.3rem);margin-top:0.7rem;}
+  .section-head p{color:var(--tinta-suave);margin-top:0.8rem;font-size:1.02rem;}
+
+  .ejes-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;
+  }
+  .eje-card{
+    background:var(--crema);
+    border:1px solid var(--linea);
+    border-radius:6px;
+    padding:2rem 1.7rem;
+    position:relative;
+    transition:transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .eje-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 18px 36px -22px rgba(43,38,32,0.35);
+    border-color:var(--verde-claro);
+  }
+  .eje-card .num{
+    font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--tinta-suave);
+  }
+  .eje-card h3{font-size:1.28rem;margin:0.8rem 0 0.7rem;color:var(--verde-rio);}
+  .eje-card p{color:var(--tinta-suave);font-size:0.95rem;}
+  .eje-card.tic{border-top:3px solid var(--azul-tic);}
+  .eje-card.paz{border-top:3px solid var(--verde-claro);}
+  .eje-card.cts{border-top:3px solid var(--terracota);}
+
+  /* ---------- RECURSOS ---------- */
+  .recursos{padding:3.5rem 0 5rem;}
+  .tabs{display:flex;gap:0.6rem;margin-bottom:2.2rem;flex-wrap:wrap;}
+  .tab-btn{
+    font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:0.04em;
+    padding:0.55rem 1rem;border:1px solid var(--linea);border-radius:30px;
+    background:transparent;color:var(--tinta-suave);cursor:pointer;
+    transition:all .2s;
+  }
+  .tab-btn:hover{border-color:var(--verde-rio);color:var(--verde-rio);}
+  .tab-btn.active{background:var(--verde-rio);border-color:var(--verde-rio);color:var(--crema);}
+
+  .card-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.3rem;
+  }
+  .res-card{
+    display:block;
+    background:var(--crema-suave);
+    border:1px solid var(--linea);
+    border-radius:6px;
+    padding:1.5rem 1.4rem 1.6rem;
+    transition:transform .2s, box-shadow .2s;
+  }
+  .res-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -20px rgba(43,38,32,0.4);}
+  .res-tag{
+    font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;
+    text-transform:uppercase;color:var(--azul-tic);
+    display:inline-block;margin-bottom:0.7rem;
+  }
+  .res-tag.paz{color:var(--verde-claro);}
+  .res-tag.cts{color:var(--terracota);}
+  .res-card h4{font-family:'Fraunces',serif;font-size:1.12rem;font-weight:600;margin-bottom:0.45rem;color:var(--tinta);}
+  .res-card p{font-size:0.87rem;color:var(--tinta-suave);}
+  .res-card .go{
+    margin-top:0.9rem;font-size:0.82rem;font-weight:600;color:var(--verde-rio);
+    display:flex;align-items:center;gap:0.35rem;
+  }
+  .res-card:hover .go{color:var(--terracota);}
+  .res-note{
+    font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--tinta-suave);
+    background:#fff7ea;border:1px dashed var(--linea);
+    padding:0.3rem 0.6rem;border-radius:4px;display:inline-block;margin-top:0.6rem;
+  }
+
+  /* ---------- FORO BANNER ---------- */
+  .foro-banner{
+    background:var(--verde-rio);color:var(--crema);
+    padding:4rem 0;position:relative;overflow:hidden;
+  }
+  .foro-grid{display:grid;grid-template-columns:1.3fr 0.7fr;gap:2.5rem;align-items:center;}
+  .foro-banner h2{color:var(--crema);font-size:clamp(1.7rem,2.8vw,2.4rem);}
+  .foro-banner p{color:#CFE3DC;margin-top:0.9rem;max-width:48ch;}
+  .foro-stats{display:flex;gap:2.2rem;margin-top:1.6rem;flex-wrap:wrap;}
+  .foro-stat .n{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:700;}
+  .foro-stat .l{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#A9C8BC;}
+  .foro-cta-box{
+    background:rgba(250,246,239,0.08);
+    border:1px solid rgba(250,246,239,0.25);
+    border-radius:8px;padding:1.8rem;text-align:center;
+  }
+  .foro-cta-box .btn-primary{width:100%;justify-content:center;margin-top:1rem;}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding:3.5rem 0 2.5rem;border-top:1px solid var(--linea);}
+  .footer-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2rem;}
+  footer .brand{margin-bottom:0.6rem;}
+  footer p{color:var(--tinta-suave);font-size:0.88rem;max-width:38ch;}
+  .footer-links{display:flex;gap:2.5rem;flex-wrap:wrap;}
+  .footer-col h5{
+    font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;
+    text-transform:uppercase;color:var(--tinta-suave);margin-bottom:0.8rem;
+  }
+  .footer-col a{display:block;font-size:0.9rem;margin-bottom:0.55rem;color:var(--tinta);transition:color .2s;}
+  .footer-col a:hover{color:var(--terracota);}
+  .footer-bottom{margin-top:2.8rem;font-size:0.78rem;color:var(--tinta-suave);}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:880px){
+    .navlinks{display:none;}
+    .hero-grid{grid-template-columns:1fr;gap:2.2rem;}
+    .ejes-grid{grid-template-columns:1fr;}
+    .foro-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap" style="padding-left:0;padding-right:0;">
+    <a href="index.html" class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none">
+        <path d="M2 28C8 28 8 18 14 18C20 18 20 28 26 28C32 28 32 18 38 18" stroke="#1B4B43" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="14" cy="11" r="4" fill="#C65D3B"/>
+      </svg>
+      Didáctica TIC · Paz · CTS
+    </a>
+    <div class="navlinks">
+      <a href="#ejes">Ejes del curso</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#foro-cta">Foro</a>
+    </div>
+    <a href="foro.html" class="nav-cta">Ir al foro</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Curso · Licenciatura en Educación</span>
+        <h1>La tecnología enseña<br>cuando enseña a <em>convivir</em>.</h1>
+        <p class="lead">Un espacio para pensar las TIC en el aula no como herramientas neutrales, sino como mediaciones que pueden construir paz y leerse desde la relación entre ciencia, tecnología y sociedad.</p>
+        <div class="hero-ctas">
+          <a href="foro.html" class="btn-primary">
+            Participar en el foro
+            <span>→</span>
+          </a>
+          <a href="#recursos" class="btn-ghost">Ver recursos del curso</a>
+        </div>
+      </div>
+      <div>
+        <p class="hero-quote">"Integrar las TIC en la educación no se trata solo de usar tecnología, sino de formar ciudadanos capaces de construir un mundo más justo, inclusivo y sostenible."</p>
+        <p class="hero-quote-src">— UNESCO, 2021</p>
+      </div>
+    </div>
+  </div>
+  <svg class="river-svg" viewBox="0 0 1200 140" preserveAspectRatio="none">
+    <path d="M0,90 C150,40 300,140 450,90 C600,40 750,140 900,90 C1000,55 1100,95 1200,75" stroke="#3F7A6C" stroke-width="2" fill="none" opacity="0.35"/>
+    <path d="M0,110 C150,70 300,150 450,110 C600,70 750,150 900,110 C1000,80 1100,115 1200,100" stroke="#C65D3B" stroke-width="1.5" fill="none" opacity="0.25"/>
+  </svg>
+</section>
+
+<section class="ejes" id="ejes">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Tres ejes, una práctica</span>
+      <h2>Cómo está pensado el curso</h2>
+      <p>Cada actividad y recurso del curso se mueve entre estos tres ejes. No son módulos separados: se entrecruzan en cada juego, cada lectura y cada discusión del foro.</p>
+    </div>
+    <div class="ejes-grid">
+      <div class="eje-card tic">
+        <span class="num">Eje 01</span>
+        <h3>Didáctica de las TIC</h3>
+        <p>Diseño y uso crítico de herramientas digitales —juegos, simuladores, cuestionarios interactivos— como mediaciones pedagógicas, no como fin en sí mismas.</p>
+      </div>
+      <div class="eje-card paz">
+        <span class="num">Eje 02</span>
+        <h3>Educación para la Paz</h3>
+        <p>Reflexión sobre convivencia, territorio e inclusión. Aparece en juegos como "Semillas de Paz" y en las preguntas que guían la discusión del foro.</p>
+      </div>
+      <div class="eje-card cts">
+        <span class="num">Eje 03</span>
+        <h3>Ciencia, Tecnología y Sociedad (CTS)</h3>
+        <p>La tecnología entendida en su contexto social: quién la usa, qué problemas resuelve y qué tensiones genera en una comunidad educativa concreta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="recursos" id="recursos">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Material del curso</span>
+      <h2>Juegos, presentaciones y herramientas</h2>
+      <p>Recursos digitales producidos para el curso. Los juegos abren directo en el navegador; las herramientas con servidor requieren instalación local.</p>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Filtrar recursos">
+      <button class="tab-btn active" data-filter="todos">Todos</button>
+      <button class="tab-btn" data-filter="juego">Juegos interactivos</button>
+      <button class="tab-btn" data-filter="presentacion">Presentaciones</button>
+      <button class="tab-btn" data-filter="herramienta">Herramientas con servidor</button>
+    </div>
+
+    <div class="card-grid" id="card-grid">
+
+      <a href="recursos/juegos/juego-semillas-de-paz.html" class="res-card" data-type="juego">
+        <span class="res-tag paz">Juego · Educación para la Paz</span>
+        <h4>Semillas de Paz</h4>
+        <p>Juego interactivo sobre convivencia y resolución de conflictos en el aula.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/travesia-por-el-sinu/index.html" class="res-card" data-type="juego">
+        <span class="res-tag cts">Juego · Territorio y CTS</span>
+        <h4>Travesía por el Sinú</h4>
+        <p>Recorrido interactivo con sonido ambiente por la fauna y geografía del Alto Sinú.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/matematicaventura-alto-sinu.html" class="res-card" data-type="juego">
+        <span class="res-tag tic">Juego · Matemáticas + TIC</span>
+        <h4>MatemáticAventura Alto Sinú</h4>
+        <p>Aventura matemática contextualizada en el territorio del Alto Sinú.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/juego-logica-computacional/index.html" class="res-card" data-type="juego">
+        <span class="res-tag tic">Juego · Pensamiento computacional</span>
+        <h4>Lógica Computacional</h4>
+        <p>Juego de tablero digital para introducir secuencias y pensamiento algorítmico.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/programa-al-heroe-pensamiento-computacional.html" class="res-card" data-type="juego">
+        <span class="res-tag tic">Juego · Pensamiento computacional</span>
+        <h4>Programa al Héroe</h4>
+        <p>Introducción lúdica a la programación por bloques y secuencias lógicas.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/jala-la-cuerda-matematicas.html" class="res-card" data-type="juego">
+        <span class="res-tag tic">Juego · Matemáticas</span>
+        <h4>Jala la Cuerda — Matemáticas</h4>
+        <p>Cuestionario competitivo de operaciones matemáticas básicas.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/geouno-ciencias-sociales.html" class="res-card" data-type="juego">
+        <span class="res-tag cts">Juego · Ciencias Sociales</span>
+        <h4>GeoUNO — Ciencias Sociales</h4>
+        <p>Juego de geografía y ciencias sociales basado en el formato UNO.</p>
+        <span class="go">Abrir juego →</span>
+      </a>
+
+      <a href="recursos/juegos/ruleta-de-participacion.html" class="res-card" data-type="juego">
+        <span class="res-tag tic">Herramienta de clase</span>
+        <h4>Ruleta de Participación</h4>
+        <p>Selector aleatorio de estudiantes para dinamizar la participación en clase.</p>
+        <span class="go">Abrir herramienta →</span>
+      </a>
+
+      <a href="recursos/presentaciones/a-contar.ppsx" class="res-card" data-type="presentacion">
+        <span class="res-tag tic">Presentación</span>
+        <h4>A Contar</h4>
+        <p>Presentación interactiva para el desarrollo del pensamiento numérico inicial.</p>
+        <span class="go">Descargar .ppsx →</span>
+      </a>
+
+      <a href="recursos/presentaciones/ayuda-a-monkey.ppsx" class="res-card" data-type="presentacion">
+        <span class="res-tag tic">Presentación</span>
+        <h4>Ayuda a Monkey</h4>
+        <p>Presentación gamificada para ejercicios guiados paso a paso.</p>
+        <span class="go">Descargar .ppsx →</span>
+      </a>
+
+      <a href="recursos/presentaciones/juego-de-las-vocales.pptx" class="res-card" data-type="presentacion">
+        <span class="res-tag tic">Presentación</span>
+        <h4>Juego de las Vocales</h4>
+        <p>Presentación interactiva para el reconocimiento de vocales.</p>
+        <span class="go">Descargar .pptx →</span>
+      </a>
+
+      <a href="recursos/presentaciones/el-ahorcado.pptm" class="res-card" data-type="presentacion">
+        <span class="res-tag tic">Presentación</span>
+        <h4>El Ahorcado</h4>
+        <p>Versión interactiva del clásico juego de palabras, con macros en PowerPoint.</p>
+        <span class="go">Descargar .pptm →</span>
+      </a>
+
+      <a href="herramientas/kahoot-ensas/" class="res-card" data-type="herramienta">
+        <span class="res-tag cts">Herramienta con servidor</span>
+        <h4>Kahoot ENSAS</h4>
+        <p>Servidor propio de cuestionarios en tiempo real, estilo Kahoot, con preguntas de la ENSAS.</p>
+        <span class="go">Ver instrucciones →</span>
+        <div class="res-note">Requiere Node.js — no funciona como link directo</div>
+      </a>
+
+      <a href="herramientas/simulacro-icfes/" class="res-card" data-type="herramienta">
+        <span class="res-tag cts">Herramienta con servidor</span>
+        <h4>Simulacro ICFES</h4>
+        <p>Plataforma propia para simulacros de pruebas Saber 11, con panel de administrador y estadísticas.</p>
+        <span class="go">Ver instrucciones →</span>
+        <div class="res-note">Requiere Node.js — no funciona como link directo</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section class="foro-banner" id="foro-cta">
+  <div class="wrap">
+    <div class="foro-grid">
+      <div>
+        <span class="eyebrow" style="color:#A9C8BC;">Espacio de discusión</span>
+        <h2>El foro es donde se cruzan los tres ejes</h2>
+        <p>Cada participación responde a una imagen y una cita disparadora, y se construye con los comentarios de tus compañeros. Tu reflexión cuenta el 60%; tus dos comentarios, el 40% restante.</p>
+        <div class="foro-stats">
+          <div class="foro-stat"><div class="n">60%</div><div class="l">Tu reflexión</div></div>
+          <div class="foro-stat"><div class="n">2×20%</div><div class="l">Comentarios a compañeros</div></div>
+        </div>
+      </div>
+      <div class="foro-cta-box">
+        <p style="font-family:'Space Mono',monospace;font-size:0.78rem;letter-spacing:0.04em;color:#CFE3DC;">PRÓXIMA FECHA LÍMITE</p>
+        <p style="font-family:'Fraunces',serif;font-size:1.5rem;margin-top:0.4rem;">Viernes 6 de febrero</p>
+        <a href="foro.html" class="btn-primary">Entrar al foro</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <a href="index.html" class="brand">Didáctica TIC · Paz · CTS</a>
+      <p>Sitio del curso de Didáctica de las TIC con enfoque en Educación para la Paz y Ciencia, Tecnología y Sociedad.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h5>Curso</h5>
+        <a href="#ejes">Ejes del curso</a>
+        <a href="#recursos">Recursos</a>
+        <a href="foro.html">Foro</a>
+      </div>
+      <div class="footer-col">
+        <h5>Herramientas</h5>
+        <a href="herramientas/kahoot-ensas/">Kahoot ENSAS</a>
+        <a href="herramientas/simulacro-icfes/">Simulacro ICFES</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    Sitio académico de uso educativo.
+  </div>
+</footer>
+
+<script>
+  // Filtro de recursos por categoría
+  const tabs = document.querySelectorAll('.tab-btn');
+  const cards = document.querySelectorAll('#card-grid .res-card');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.dataset.filter;
+      cards.forEach(card => {
+        card.style.display = (filter === 'todos' || card.dataset.type === filter) ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
